@@ -1,20 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- To-Do 
--- add loger
--- add Message TypeClass
+-- To-Do
 -- add Multimedia?
 module ChatBot where
 
 import Control.Monad (replicateM)
 --import Data.List (singleton)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T 
 
 import Message
+import qualified Logger
 
 data Handle m = Handle
    { hConfig :: Config
+   , hLoggerHandle :: Logger.Handle m
    , hGetState :: m State
    , hModifyState :: (State -> State) -> m ()
    }
@@ -24,19 +25,21 @@ data Config = Config
    , cfgRepeatText            :: Text
    , cfgMaxRepetitionsCount   :: RepetitionCount
    , cfgDefaultRepeatCount    :: RepetitionCount
-   }
+   } deriving Show
    
 data State = State
    { stateRepetitionCount :: RepetitionCount
-   }
+   } deriving Show
 
 -- /\ smart constructors? /\
 
 data Event a = SetRepeatitionCountEvent RepetitionCount
              | MessageEvent a
+             deriving Show
 
 data Response a = MessageResponse a
                 | MenuResponse Title [(RepetitionCount, Event a)]
+                deriving Show
 
 type Title = Text
 
@@ -56,33 +59,41 @@ isCommand msg cmd = case messageToText msg of
    Just msgText -> msgText == cmd
 
 handleChangeRepetitionCount :: Monad m => Handle m -> Int -> m [Response a]
-handleChangeRepetitionCount h n =
+handleChangeRepetitionCount h n = do
+   Logger.logInfo (hLoggerHandle h) $ "User setted repetition count to: " <> (T.pack . show $ n)
    hModifyState h (\s -> s{stateRepetitionCount = n})
-   >> return []
+   return []
 
 -- singleton or []?
-respondHelpCommand :: (Monad m, Message a) => Handle m -> m [Response a] 
-respondHelpCommand = return . singleton . MessageResponse . textToMessage . cfgHelpText . hConfig
+respondHelpCommand :: (Monad m, Message a) => Handle m -> m [Response a]
+respondHelpCommand h = do
+   Logger.logInfo (hLoggerHandle h) "Got /help command"
+   return . singleton . MessageResponse . textToMessage . cfgHelpText . hConfig $ h
 
--- is it's okay to not specify message t-c?
 respondRepeatCommnad :: Monad m => Handle m -> m [Response a] 
 respondRepeatCommnad h = do
+   Logger.logInfo (hLoggerHandle h) "Got /repeat command"
    repeatitionCount        <- fmap stateRepetitionCount . hGetState $ h
    let question            = cfgRepeatText . hConfig $ h
-   let title               = "Current repetition count: " <> (T.pack . show $ repeatitionCount) <> "/n" <> question
+   let title               = "Current repetition count: "
+                           <> (T.pack . show $ repeatitionCount) <> "/n" <> question
    let maxRepeatitionCount = cfgMaxRepetitionsCount . hConfig $ h
    let buttons             = [(n, SetRepeatitionCountEvent n) | n <- [1..maxRepeatitionCount]]
    return . singleton $ MenuResponse title buttons
 
-respondOnMessage :: Monad m => Handle m -> a -> m [Response a]
+respondOnMessage :: (Monad m, Message a) => Handle m -> a -> m [Response a]
 respondOnMessage h msg = do
    repeatitionCount <- fmap stateRepetitionCount . hGetState $ h
-   replicateM repeatitionCount . return $ MessageResponse msg
+   replicateM repeatitionCount $ echo h msg
 
-{-
-echo :: a -> Response a
-echo = MessageResponse
--}
+echo :: (Monad m, Message a) => Handle m -> a -> m (Response a)
+echo h msg = do
+   Logger.logInfo (hLoggerHandle h) $
+      "User sended message, echoing : "
+      <> (fromMaybe "<message can't be shown>" (messageToText msg))
+   return $ MessageResponse msg
 
+
+-- Data.List?
 singleton :: a -> [a]
 singleton x = [x]
