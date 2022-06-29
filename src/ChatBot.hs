@@ -6,13 +6,17 @@
 -- add Multimedia?
 module ChatBot where
 
+import Control.Monad (replicateM)
+--import Data.List (singleton)
 import Data.Text (Text)
 import qualified Data.Text as T 
 
 import Message
 
-data Handle = Handle
+data Handle m = Handle
    { hConfig :: Config
+   , hGetState :: m State
+   , hModifyState :: (State -> State) -> m ()
    }
 
 data Config = Config
@@ -21,6 +25,12 @@ data Config = Config
    , cfgMaxRepetitionsCount   :: RepetitionCount
    , cfgDefaultRepeatCount    :: RepetitionCount
    }
+   
+data State = State
+   { stateRepetitionCount :: RepetitionCount
+   }
+
+-- /\ smart constructors? /\
 
 data Event a = SetRepeatitionCountEvent RepetitionCount
              | MessageEvent a
@@ -32,12 +42,12 @@ type Title = Text
 
 type RepetitionCount = Int
 
-respond :: Message a => Handle -> Event a -> [Response a]
-respond h (SetRepeatitionCountEvent msg) =
-
+respond :: (Monad m, Message a) => Handle m -> Event a -> m [Response a]
+respond h (SetRepeatitionCountEvent n) = 
+   handleChangeRepetitionCount h n
 respond h (MessageEvent msg) 
-   | isCommand msg "\help"   = respondHelpCommand h
-   | isCommand msg "\repeat" = respondRepeatCommnad h
+   | isCommand msg "/help"   = respondHelpCommand h
+   | isCommand msg "/repeat" = respondRepeatCommnad h
    | otherwise               = respondOnMessage h msg
 
 isCommand :: Message a => a -> Text -> Bool
@@ -45,23 +55,34 @@ isCommand msg cmd = case messageToText msg of
    Nothing      -> False
    Just msgText -> msgText == cmd
 
+handleChangeRepetitionCount :: Monad m => Handle m -> Int -> m [Response a]
+handleChangeRepetitionCount h n =
+   hModifyState h (\s -> s{stateRepetitionCount = n})
+   >> return []
+
 -- singleton or []?
-respondHelpCommnad :: Message a => Handle -> [Response a] 
-respondHelpCommnad = singleton . MessageResponse . textToMessage . cfgHelpText . hConfig
+respondHelpCommand :: (Monad m, Message a) => Handle m -> m [Response a] 
+respondHelpCommand = return . singleton . MessageResponse . textToMessage . cfgHelpText . hConfig
 
-respondRepeatCommnad :: Handle -> [Response a] 
-respondRepeatCommnad h = let 
-   repeatitionCount    = cfgRepeatCount . hConfig $ h
-   question            = cfgRepeatText . hConfig $ h
-   title               = "Current repetition count: " <> (T.Pack n) <> "/n" <> question
-   maxRepeatitionCount = cfgMaxRepetitionsCount . hConfig $ h
-   buttons             = [(n, SetRepeatitionCountEvent n) | n <- [1..maxRepeatitionCount]]
-   in singleton $ MenuResponse title buttons
+-- is it's okay to not specify message t-c?
+respondRepeatCommnad :: Monad m => Handle m -> m [Response a] 
+respondRepeatCommnad h = do
+   repeatitionCount        <- fmap stateRepetitionCount . hGetState $ h
+   let question            = cfgRepeatText . hConfig $ h
+   let title               = "Current repetition count: " <> (T.pack . show $ repeatitionCount) <> "/n" <> question
+   let maxRepeatitionCount = cfgMaxRepetitionsCount . hConfig $ h
+   let buttons             = [(n, SetRepeatitionCountEvent n) | n <- [1..maxRepeatitionCount]]
+   return . singleton $ MenuResponse title buttons
 
-respondOnMessage :: Handle -> a -> [Response a]
-respondOnMessage h msg = replicate (repeatCount h) . MessageResponse
+respondOnMessage :: Monad m => Handle m -> a -> m [Response a]
+respondOnMessage h msg = do
+   repeatitionCount <- fmap stateRepetitionCount . hGetState $ h
+   replicateM repeatitionCount . return $ MessageResponse msg
 
 {-
 echo :: a -> Response a
 echo = MessageResponse
 -}
+
+singleton :: a -> [a]
+singleton x = [x]
