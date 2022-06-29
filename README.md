@@ -1,4 +1,4 @@
 # chatbot
-Building:
-Clone
-Stack build
+Building:\
+clone\
+stack build\
