@@ -1,8 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
+-- | bot interface and logic
 
 -- To-Do
 -- add Multimedia?
-module ChatBot where
+module ChatBot 
+   ( Handle (..)
+   , Config (..)
+   , State (..)
+   , Event (..)
+   , Response (..)
+   , respond
+   ) where
 
 import Control.Monad (replicateM)
 --import Data.List (singleton)

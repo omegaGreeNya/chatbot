@@ -25,7 +25,8 @@ source-repository head
 library
   exposed-modules:
       ChatBot
-      Lib
+      Logger
+      Logger.Impl
       Message
   other-modules:
       Paths_chatbot
