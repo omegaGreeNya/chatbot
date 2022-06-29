@@ -1,31 +1,43 @@
 -- | Logger Implementation
 module Logger.Impl
-   ( makeSimpleConfig
+   ( Config (..)
+   , makeSimpleHandle
    , withHandle
    ) where
 
+import Data.Aeson
 import Data.Text (Text)
+import GHC.Generics
 import qualified Data.Text.IO as TIO
 import qualified System.IO (Handle)
 
 import qualified Logger
 
--- | There is no way to construct Config manually
-data Config m = Config
-   { cfgLogMessageImpl :: Text -> m ()
-   , cfgMinLogLevel    :: Logger.LogLevel
+data Config = Config
+   { cfgMinLogLevel :: Logger.LogLevel
+   } deriving (Generic, Show)
+
+instance ToJSON Config where
+   toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON Config
+
+-- | There is no way to construct Handle manually
+data Handle m = Handle
+   { hLogMessageImpl :: Text -> m ()
+   , hConfig         :: Config
    }
 
--- | Config smart constructor, to keep things simple
-makeSimpleConfig :: System.IO.Handle -> Logger.LogLevel -> Config IO
-makeSimpleConfig handle level = Config logger level
+-- | Handle smart constructor, to keep things simple
+makeSimpleHandle :: System.IO.Handle -> Config -> Handle IO
+makeSimpleHandle handle cfg = Handle logger cfg
    where
       logger = TIO.hPutStrLn handle
 
-withHandle :: Monad m => Config m -> (Logger.Handle m -> m ()) -> m ()
-withHandle cfg f = f $ Logger.Handle (logWith cfg)
+withHandle :: Monad m => Handle m -> (Logger.Handle m -> m ()) -> m ()
+withHandle h f = f $ Logger.Handle (logWith h)
 
-logWith :: Monad m => Config m -> Logger.LogLevel -> Text -> m ()
-logWith (Config logger minLevel) level msg
+logWith :: Monad m => Handle m -> Logger.LogLevel -> Text -> m ()
+logWith (Handle logger (Config minLevel)) level msg
    | level >= minLevel = logger msg
    | otherwise         = return ()   

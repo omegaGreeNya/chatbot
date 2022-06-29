@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       ChatBot
+      Config
       Logger
       Logger.Impl
       Message
@@ -32,10 +33,15 @@ library
       Paths_chatbot
   hs-source-dirs:
       src
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
   ghc-options: -Wall -Werror -Wcompat -Wincomplete-uni-patterns
   build-depends:
       QuickCheck
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , hspec
     , mtl
     , text
@@ -47,10 +53,15 @@ executable echo-bot-exe
       Paths_chatbot
   hs-source-dirs:
       app
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
   ghc-options: -Wall -Werror -Wcompat -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , chatbot
     , hspec
     , mtl
@@ -64,10 +75,15 @@ test-suite echo-bot-test
       Paths_chatbot
   hs-source-dirs:
       test
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
   ghc-options: -Wall -Werror -Wcompat -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , chatbot
     , hspec
     , mtl

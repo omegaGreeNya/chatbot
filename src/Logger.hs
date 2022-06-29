@@ -8,20 +8,28 @@ module Logger
    , logError
    ) where
 
+import Data.Aeson hiding (Error)
 import Data.Text (Text)
+import GHC.Generics
 
 data Handle m = Handle
    { hLogMessage :: LogLevel -> Text -> m ()
    }
 
 data LogLevel
-   = Debug
-   | Info
-   | Warning
-   | Error deriving (Show, Eq, Ord)
+   = DEBUG
+   | INFO
+   | WARN
+   | ERROR
+   deriving (Generic, Show, Eq, Ord)
+
+instance ToJSON LogLevel where
+   toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON LogLevel
 
 logDebug, logInfo, logWarning, logError :: Handle m -> Text -> m ()
-logDebug h = hLogMessage h Debug
-logInfo h = hLogMessage h Info
-logWarning h = hLogMessage h Warning
-logError h = hLogMessage h Error
+logDebug h = hLogMessage h DEBUG
+logInfo h = hLogMessage h INFO
+logWarning h = hLogMessage h WARN
+logError h = hLogMessage h ERROR

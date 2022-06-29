@@ -18,12 +18,18 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README
 
+default-extensions:
+- OverloadedStrings
+- DeriveGeneric
+
 dependencies:
 - base >= 4.7 && < 5
-- text
-- mtl
-- QuickCheck
+- aeson
+- bytestring
 - hspec
+- mtl
+- text
+- QuickCheck
 
 ghc-options:
 - -Wall

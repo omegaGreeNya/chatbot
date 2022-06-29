@@ -1,5 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
--- | bot interface and logic
+-- | Bot interface and logic
 
 -- To-Do
 -- add Multimedia?
@@ -13,9 +12,11 @@ module ChatBot
    ) where
 
 import Control.Monad (replicateM)
+import Data.Aeson
 --import Data.List (singleton)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import GHC.Generics
 import qualified Data.Text as T 
 
 import Message
@@ -33,7 +34,12 @@ data Config = Config
    , cfgRepeatText            :: Text
    , cfgMaxRepetitionsCount   :: RepetitionCount
    , cfgDefaultRepeatCount    :: RepetitionCount
-   } deriving Show
+   } deriving (Generic, Show)
+
+instance ToJSON Config where
+   toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON Config
    
 data State = State
    { stateRepetitionCount :: RepetitionCount
