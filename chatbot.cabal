@@ -26,6 +26,7 @@ library
   exposed-modules:
       ChatBot
       Config
+      Lib
       Logger
       Logger.Impl
       Message

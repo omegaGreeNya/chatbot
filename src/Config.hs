@@ -2,14 +2,18 @@
 
 
 -- TO-DO
--- 
--- add define default texts
+-- (!!!) Add logic to check that config REALLY MISSING.
 module Config where
 
+import Control.Monad.IO.Class (MonadIO(..))
 import Data.Aeson
+import Data.ByteString.Lazy (ByteString)
 import GHC.Generics
-import System.IO
+
 import qualified Data.ByteString.Lazy as B
+
+import Lib
+
 import qualified ChatBot
 import qualified Logger.Impl
 import qualified Logger
@@ -24,17 +28,45 @@ instance ToJSON AppConfig where
 
 instance FromJSON AppConfig
 
-initConfig :: Maybe Logger.LogLevel -> IO (Maybe AppConfig)
-initConfig = undefined {-do
-   mConfig <- try $ getConfig
-   case mConfig of
-      Nothing -> Logger.logWarning ""
--}
-getConfig :: IO (Maybe AppConfig)
-getConfig = withFile "config.json" ReadMode
-   ( fmap decode
-   . B.hGetContents
-   )
+configPath :: FilePath
+configPath = "config.json"
+
+configBackupPath :: FilePath
+configBackupPath = locPath <> "malformed_" <> fileName
+   where (locPath, fileName) = splitFileName configPath
+
+-- Returns config from "config.json" if possible, 
+--   otherwise returns default config and writes it to config.json
+--   Also, if config malformed, saves malformed version
+initConfig :: MonadIO m => Logger.Handle m -> m (AppConfig)
+initConfig h = do
+   eConfig <- readFileLog B.readFile h Nothing configPath
+   case eConfig of
+      -- File missing/unavaible
+      Left _ -> do
+         -- (!!!) Add logic to check that config REALLY MISSING.
+         _ <- writeFileLog B.writeFile h (Just $ "Saving default " .<~ configPath) configPath (encode defaultConfig)
+         Logger.logInfo h "Default config would be used"
+         return defaultConfig
+      -- File readed, start decoding it
+      Right bsConfig -> decodeConfig h bsConfig
+
+
+-- Maybe do not replace malformed cfg??
+decodeConfig :: MonadIO m => Logger.Handle m -> ByteString -> m (AppConfig)
+decodeConfig h bsConfig = case decode bsConfig of
+            -- Config file malformed case
+            Nothing -> do
+               Logger.logWarning h $
+                  configPath ~>. " is malformed, malformed version saved as " .<~ configBackupPath
+               -- Saving malformed file just in case.
+               _ <- writeFileLog B.writeFile h Nothing configBackupPath bsConfig
+               -- Replace malformed config file with default configuration
+               _ <- writeFileLog B.writeFile h (Just $ "Saving default " .<~ configPath) configPath (encode defaultConfig)
+               Logger.logInfo h "Default config would be used"
+               return defaultConfig
+            -- Config file is OK, return it
+            Just config -> return config
 
 -- | If there is no defined config/it's malformed, we will write pre-defined one.
 defaultConfig :: AppConfig 
@@ -49,4 +81,3 @@ defaultChatBotConfig = ChatBot.Config
 
 defaultLoggerConfig :: Logger.Impl.Config
 defaultLoggerConfig = Logger.Impl.Config Logger.INFO
-
