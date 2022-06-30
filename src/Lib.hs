@@ -2,16 +2,24 @@
 
 -- To-Do
 -- Organize all around
+-- (!!!) Get rid of unsafe!
 module Lib
    ( writeFileLog
    , readFileLog
+   
    , (.<~)
    , (~>.)
    , (.<)
    , (>.)
+   
    , renameFile
    , isPathSeparator
    , splitFileName
+   
+   , unsafeFromLeft
+   , unsafeFromJust
+   
+   , singleton
    ) where
 
 import Control.Monad (when)
@@ -95,7 +103,15 @@ isPathSeparator '/'  = True
 isPathSeparator '\\' = True
 isPathSeparator _    = False
 
-
+-- (!!!) Get rid of them!
 unsafeFromLeft :: Either a b -> a
 unsafeFromLeft (Left a) = a
+
+unsafeFromJust :: Maybe a -> a
+unsafeFromJust (Just a) = a
+
 -- >>>>
+
+-- Data.List?
+singleton :: a -> [a]
+singleton x = [x]

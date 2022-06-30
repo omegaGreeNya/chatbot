@@ -3,6 +3,7 @@
 
 -- TO-DO
 -- (!!!) Add logic to check that config REALLY MISSING.
+-- Test IO actions manually
 module Config where
 
 import Control.Monad.IO.Class (MonadIO(..))

@@ -8,6 +8,7 @@ module ChatBot
    , State (..)
    , Event (..)
    , Response (..)
+   , RepetitionCount
    , respond
    ) where
 
@@ -19,6 +20,7 @@ import Data.Text (Text)
 import GHC.Generics
 import qualified Data.Text as T 
 
+import Lib (singleton)
 import Message
 import qualified Logger
 
@@ -106,8 +108,3 @@ echo h msg = do
       "User sended message, echoing : "
       <> (fromMaybe "<message can't be shown>" (messageToText msg))
    return $ MessageResponse msg
-
-
--- Data.List?
-singleton :: a -> [a]
-singleton x = [x]

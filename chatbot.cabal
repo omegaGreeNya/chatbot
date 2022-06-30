@@ -26,6 +26,7 @@ library
   exposed-modules:
       ChatBot
       Config
+      FrontEnd.Console
       Lib
       Logger
       Logger.Impl
