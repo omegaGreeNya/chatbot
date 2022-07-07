@@ -2,6 +2,7 @@
 
 -- To-Do
 -- add Multimedia?
+-- ?Move interface away, this is internal module
 module ChatBot 
    ( Handle (..)
    , Config (..)

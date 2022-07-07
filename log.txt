@@ -1,0 +1,15 @@
+[INFO] User sended message, echoing : /hel
+[INFO] Got /help command
+[INFO] User sended message, echoing : aboba
+[INFO] Got /repeat command
+[INFO] User setted repetition count to: 2
+[INFO] User sended message, echoing : 2
+[INFO] User sended message, echoing : 2
+[INFO] User sended message, echoing : 123
+[INFO] User sended message, echoing : 123
+[INFO] User sended message, echoing : /repeat 1
+[INFO] User sended message, echoing : /repeat 1
+[INFO] Got /repeat command
+[INFO] User setted repetition count to: 1
+[INFO] User sended message, echoing : echo
+[INFO] User sended message, echoing : cool

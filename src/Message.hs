@@ -1,5 +1,4 @@
--- | Type-class to convert between Text and Message-formats
-
+-- | Message it's type-class to convert between Text and Message-formats
 module Message where
 
 import           Data.Text (Text)

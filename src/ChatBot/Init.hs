@@ -13,6 +13,7 @@ import qualified ChatBot
 import qualified Logger
 
 -- Map userID State
+-- MonadIO m =>
 createBotHandle :: ChatBot.Config -> Logger.Handle IO -> IO (ChatBot.Handle IO)
 createBotHandle cfg hLogger = do
    (getState, modState) <- createState cfg

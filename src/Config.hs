@@ -2,8 +2,10 @@
 
 
 -- TO-DO
+-- Organize
 -- (!!!) Add logic to check that config REALLY MISSING.
 -- Test IO actions manually
+-- Split AppConfig and modules configs, for smoother modifying process
 module Config where
 
 import Control.Monad.IO.Class (MonadIO(..))
@@ -39,8 +41,8 @@ configBackupPath = locPath <> "malformed_" <> fileName
 -- Returns config from "config.json" if possible, 
 --   otherwise returns default config and writes it to config.json
 --   Also, if config malformed, saves malformed version
-initConfig :: MonadIO m => Logger.Handle m -> m (AppConfig)
-initConfig h = do
+initAppConfig :: MonadIO m => Logger.Handle m -> m (AppConfig)
+initAppConfig h = do
    eConfig <- readFileLog B.readFile h Nothing configPath
    case eConfig of
       -- File missing/unavaible

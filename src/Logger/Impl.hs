@@ -8,6 +8,7 @@ module Logger.Impl
    ( Handle (..) -- only type
    , Config (..)
    , withHandle
+   , logFile
    ) where
 
 import Data.Aeson
@@ -31,8 +32,11 @@ data Handle m = Handle
    , hConfig         :: Config
    }
 
+logFile :: FilePath
+logFile = "log.txt"
+
 -- | This function provides low-level logger handle for application.
-withHandle :: Monad m => Handle m -> (Logger.Handle m -> m ()) -> m ()
+withHandle :: Monad m => Handle m -> (Logger.Handle m -> m a) -> m a
 withHandle h f = f $ Logger.Handle (logWith h)
 
 logWith :: Monad m => Handle m -> Logger.LogLevel -> Text -> m ()

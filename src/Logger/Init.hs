@@ -4,12 +4,13 @@ module Logger.Init
    , Config (..)
    , createHandleIO
    , withHandle
+   , logFile
    ) where
 
 import qualified Data.Text.IO as TIO
 import qualified System.IO (Handle)
 
-import Logger.Impl (Handle (..), Config (..), withHandle)
+import Logger.Impl (Handle (..), Config (..), withHandle, logFile)
 
 -- | Handle constructor. Uses file handle.
 createHandleIO :: System.IO.Handle -> Config -> Handle IO

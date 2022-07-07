@@ -1,22 +1,38 @@
+-- To-Do
+--    Rework imports
+--    Work on start up logic
+--    Logger imports dont seems accurate
 module Main where
 
---import ChatBot.Impl
+import System.IO (withFile, IOMode(..))
+
+import Config (AppConfig, defaultLoggerConfig, initAppConfig)
+import ChatBot.Init (createBotHandle)
+import Logger.Init (logFile)
+import qualified Config
+import qualified FrontEnd.Console as Console
+import qualified Logger.Init as Logger
+import qualified Logger as LowLogger
 
 main :: IO ()
-main = print "WIP"
-{-
+main = do
+   appCfg <- initAppConfiguration
+   withLoggerHandle appCfg logFile $ \hLogger -> do
+      hBot <- createBotHandle (Config.cfgChatBot appCfg) hLogger
+      Console.run (Console.Handle hBot)
+      
+   
+initAppConfiguration :: IO AppConfig
+initAppConfiguration = do
+   withFile "logStart.txt" AppendMode $ \startUpLogFileHandle -> do
+      let startUpLoggerHandle = Logger.createHandleIO startUpLogFileHandle defaultLoggerConfig
+      Logger.withHandle startUpLoggerHandle initAppConfig
 
-withLogHandle :: Config.AppConfig -> System.IO.Handle -> (Logger.Handle IO -> IO ()) -> IO ()
-withLogHandle appCfg h f = do
-   let cfg = Config.cfgLogger appCfg
-   loggerImplHandle <- Logger.Impl.makeSimpleHandle h cfg
-   Logger.Impl.withHandle loggerImplHandle
-
-makeBotHandleTEST :: Config.AppConfig -> Logger.Handle IO -> IO State -> ((State -> State) -> IO ()) -> IO (ChatBot.Handle IO)
-makeBotHandleTEST appCfg h = let
-   cfg = Config.cfgChatBot appCfg
-
--- getUserState :: 
-getUserState :: IO (IORef ChatBot.State)
-getUserState 
--}
+withLoggerHandle :: AppConfig 
+                 -> FilePath                    -- ^ Log file
+                 -> (LowLogger.Handle IO -> IO ())
+                 -> IO ()
+withLoggerHandle appCfg path f =
+   withFile path AppendMode $ \hLogFile -> do
+      let loggerHandle = Logger.createHandleIO hLogFile (Config.cfgLogger appCfg)
+      Logger.withHandle loggerHandle f
