@@ -46,8 +46,8 @@ initConfig h = do
       -- File missing/unavaible
       Left _ -> do
          -- (!!!) Add logic to check that config REALLY MISSING.
-         _ <- writeFileLog B.writeFile h (Just $ "Saving default " .<~ configPath) configPath (encode defaultConfig)
          Logger.logInfo h "Default config would be used"
+         _ <- writeFileLog B.writeFile h (Just $ "Saving default config " .<~ configPath) configPath (encode defaultConfig)
          return defaultConfig
       -- File readed, start decoding it
       Right bsConfig -> decodeConfig h bsConfig
@@ -63,8 +63,8 @@ decodeConfig h bsConfig = case decode bsConfig of
                -- Saving malformed file just in case.
                _ <- writeFileLog B.writeFile h Nothing configBackupPath bsConfig
                -- Replace malformed config file with default configuration
-               _ <- writeFileLog B.writeFile h (Just $ "Saving default " .<~ configPath) configPath (encode defaultConfig)
                Logger.logInfo h "Default config would be used"
+               _ <- writeFileLog B.writeFile h (Just $ "Saving default config " .<~ configPath) configPath (encode defaultConfig)
                return defaultConfig
             -- Config file is OK, return it
             Just config -> return config

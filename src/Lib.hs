@@ -2,7 +2,6 @@
 
 -- To-Do
 -- Organize all around
--- (!!!) Get rid of unsafe!
 module Lib
    ( writeFileLog
    , readFileLog
@@ -16,16 +15,13 @@ module Lib
    , isPathSeparator
    , splitFileName
    
-   , unsafeFromLeft
-   , unsafeFromJust
-   
    , singleton
    ) where
 
 import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Exception (try, SomeException)
-import Data.Either (isLeft)
+import Data.Either (isLeft, fromLeft)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Logger
@@ -42,13 +38,16 @@ writeFileLog saveF h logMessage path dataToSave = do
    Logger.logInfo h $
       maybe ("Saving " .<~ path) id logMessage
    result <- liftIO . try $ saveF path dataToSave
-   when (isLeft result) $
-      Logger.logError h
-         $ "Error during saving " 
-         .<~ path
-         <> " (file not saved): "
-         .<~ (unsafeFromLeft result) -- since we know that result = Left _ is save to aplly unsafe unboxing
-   return result
+   case result of
+      Left err -> logErr err >> return result
+      _        -> return result
+   where 
+      logErr err = 
+         Logger.logError h
+            $ "Error during saving " 
+            .<~ path
+            <> " (file not saved): "
+            .<~ err
 -- >>>
 
 -- <<< Safe version of "readFile" with logging. Logs error before returning.
@@ -62,13 +61,16 @@ readFileLog readF h logMessage path = do
    Logger.logInfo h $
       maybe ("Loading " .<~ path) id logMessage
    result <- liftIO . try $ readF path
-   when (isLeft result) $
-      Logger.logError h
-         $ "Error during loading " 
-         .<~ path
-         <> " (file not loaded): "
-         .<~ (unsafeFromLeft result) -- since we know that result = Left _ is save to aplly unsafe unboxing
-   return result
+   case result of
+      Left err -> logErr err >> return result
+      _        -> return result
+   where 
+      logErr err = 
+         Logger.logError h
+            $ "Error during loading " 
+            .<~ path
+            <> " (file not loaded): "
+            .<~ err
 -- >>>
 
 -- <<<< Formating
@@ -102,14 +104,6 @@ isPathSeparator :: Char -> Bool
 isPathSeparator '/'  = True
 isPathSeparator '\\' = True
 isPathSeparator _    = False
-
--- (!!!) Get rid of them!
-unsafeFromLeft :: Either a b -> a
-unsafeFromLeft (Left a) = a
-
-unsafeFromJust :: Maybe a -> a
-unsafeFromJust (Just a) = a
-
 -- >>>>
 
 -- Data.List?

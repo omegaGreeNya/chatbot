@@ -25,11 +25,13 @@ source-repository head
 library
   exposed-modules:
       ChatBot
+      ChatBot.Init
       Config
       FrontEnd.Console
       Lib
       Logger
       Logger.Impl
+      Logger.Init
       Message
   other-modules:
       Paths_chatbot

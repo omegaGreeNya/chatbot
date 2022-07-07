@@ -1,4 +1,4 @@
--- | Logger interface
+-- | Logger functionality interface
 module Logger
    ( LogLevel (..)
    , Handle (..)

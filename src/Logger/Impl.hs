@@ -1,16 +1,20 @@
--- | Logger Implementation
+-- | Here defined Logger implementation.
+--    Consider this module as internal.
+
+-- to-do
+--    ADD time
+--    split config saving into separate module for less coupling.
 module Logger.Impl
-   ( Config (..)
-   , makeSimpleHandle
+   ( Handle (..) -- only type
+   , Config (..)
    , withHandle
    ) where
 
 import Data.Aeson
 import Data.Text (Text)
 import GHC.Generics
-import qualified Data.Text.IO as TIO
-import qualified System.IO (Handle)
 
+import Lib ((.<))
 import qualified Logger
 
 data Config = Config
@@ -22,22 +26,20 @@ instance ToJSON Config where
 
 instance FromJSON Config
 
--- | There is no way to construct Handle manually
 data Handle m = Handle
    { hLogMessageImpl :: Text -> m ()
    , hConfig         :: Config
    }
 
--- | Handle smart constructor, to keep things simple
-makeSimpleHandle :: System.IO.Handle -> Config -> Handle IO
-makeSimpleHandle handle cfg = Handle logger cfg
-   where
-      logger = TIO.hPutStrLn handle
-
+-- | This function provides low-level logger handle for application.
 withHandle :: Monad m => Handle m -> (Logger.Handle m -> m ()) -> m ()
 withHandle h f = f $ Logger.Handle (logWith h)
 
 logWith :: Monad m => Handle m -> Logger.LogLevel -> Text -> m ()
 logWith (Handle logger (Config minLevel)) level msg
-   | level >= minLevel = logger msg
-   | otherwise         = return ()   
+   | level >= minLevel = logger $ formateLogMessage level msg
+   | otherwise         = return ()
+
+-- ADD time fixation
+formateLogMessage :: Logger.LogLevel -> Text -> Text
+formateLogMessage level msg = "[" .< level <> "] " <> msg

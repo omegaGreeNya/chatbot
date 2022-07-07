@@ -55,22 +55,21 @@ parseEvent :: Text -> ChatBot.Event Text
 parseEvent = ChatBot.MessageEvent 
 
 evalResponse :: Handle -> [ChatBot.Response Text] -> IO ()
-evalResponse _ []
-   = return ()
-evalResponse h ((ChatBot.MessageResponse msg):responses)
-   = do
-      TIO.putStrLn msg
-      evalResponse h responses
-evalResponse h ((ChatBot.MenuResponse title buttons):responses)
-   = do
-      TIO.putStrLn title
-      putButtons buttons
-      mButtonEvent <- getButton buttons
-      when (isJust mButtonEvent) $ do
-         let event = unsafeFromJust mButtonEvent
+evalResponse _ [] =
+   return ()
+evalResponse h ((ChatBot.MessageResponse msg):responses) = do
+   TIO.putStrLn msg
+   evalResponse h responses
+evalResponse h ((ChatBot.MenuResponse title buttons):responses) = do
+   TIO.putStrLn title
+   putButtons buttons
+   mButtonEvent <- getButton buttons
+   case mButtonEvent of
+      Just event -> do
          response <- ChatBot.respond (hBotHandle h) event
-         evalResponse h response
-      evalResponse h responses
+         evalResponse h (response <> responses)
+      Nothing ->
+         evalResponse h responses
 
 putButtons :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO ()
 putButtons buttons = putButtonsBy3 buttons 0
@@ -82,7 +81,7 @@ putButtonsBy3 ((x,_):xs) i = do
    when (i == 2) $ TIO.putStrLn ""
    putButtonsBy3 xs (i + 1)
 
--- (???) We assume that each button is unique. Rework it maybe?
+-- (???) We assume that each button is unique.
 getButton :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO (Maybe (ChatBot.Event Text))
 getButton buttons = do
    input <- getLine
