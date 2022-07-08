@@ -9,21 +9,14 @@ module FrontEnd.Console
    ) where
 
 
-import Control.Exception (try, SomeException)
-import Control.Monad (when)
 import Data.List (find)
-import Data.Maybe (isJust)
 import Data.Text (Text)
+import System.IO (BufferMode(..), hGetBuffering, hSetBuffering, stdout)
 import Text.Read (readMaybe)
-import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Message
+
 import Lib
 import qualified ChatBot
-
-instance Message Text where
-   messageToText = Just
-   textToMessage = id
 
 data Handle = Handle
    { hBotHandle :: ChatBot.Handle IO
@@ -42,6 +35,14 @@ data Vocabulary = Vocabulary
 
 run :: Handle -> IO ()
 run h = do
+   bufMode <- hGetBuffering stdout
+   
+   -- Button output by lines is buffered w/o this command, and last line of buttons prints after choosing answer
+   --    look evalResponse > putButtons and getButton
+   -- God knows how much similar error-prone behavior might be with console, 
+   --    so we enable NoBuffering during 'run' execution and disable it after.
+   hSetBuffering stdout NoBuffering 
+   
    TIO.putStrLn "Hey, im echo-bot. Type /help to get info about me."
    let loop = do
          msg <- TIO.getLine
@@ -49,7 +50,8 @@ run h = do
          response <- ChatBot.respond (hBotHandle h) event
          evalResponse h response
          loop
-   loop
+   _ <- loop
+   hSetBuffering stdout bufMode
 
 parseEvent :: Text -> ChatBot.Event Text
 parseEvent = ChatBot.MessageEvent 
@@ -75,11 +77,12 @@ putButtons :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO ()
 putButtons buttons = putButtonsBy3 buttons 0
 
 putButtonsBy3 :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> Int -> IO ()
-putButtonsBy3 [] _ = return ()
+putButtonsBy3 [] _ = TIO.putStrLn ""
 putButtonsBy3 ((x,_):xs) i = do
    TIO.putStr $ "[" .< x <> "] "
-   when (i == 2) $ TIO.putStrLn ""
-   putButtonsBy3 xs (i + 1)
+   case i of
+      2 -> TIO.putStrLn "" >> putButtonsBy3 xs 0
+      _ -> putButtonsBy3 xs (i + 1)
 
 -- (???) We assume that each button is unique.
 getButton :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO (Maybe (ChatBot.Event Text))

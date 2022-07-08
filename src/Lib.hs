@@ -18,10 +18,8 @@ module Lib
    , singleton
    ) where
 
-import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Exception (try, SomeException)
-import Data.Either (isLeft, fromLeft)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Logger

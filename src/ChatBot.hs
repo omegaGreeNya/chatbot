@@ -21,7 +21,7 @@ import Data.Text (Text)
 import GHC.Generics
 import qualified Data.Text as T 
 
-import Lib (singleton)
+import Lib ((.<), singleton)
 import Message
 import qualified Logger
 
@@ -92,8 +92,7 @@ respondRepeatCommnad h = do
    Logger.logInfo (hLoggerHandle h) "Got /repeat command"
    repeatitionCount        <- fmap stateRepetitionCount . hGetState $ h
    let question            = cfgRepeatText . hConfig $ h
-   let title               = "Current repetition count: "
-                           <> (T.pack . show $ repeatitionCount) <> "/n" <> question
+   let title               = "Current repetition count: " .< repeatitionCount <> "\n" <> question
    let maxRepeatitionCount = cfgMaxRepetitionsCount . hConfig $ h
    let buttons             = [(n, SetRepeatitionCountEvent n) | n <- [1..maxRepeatitionCount]]
    return . singleton $ MenuResponse title buttons

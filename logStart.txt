@@ -2,3 +2,10 @@
 [ERROR] Error during loading ""config.json"" (file not loaded): "config.json: openBinaryFile: does not exist (No such file or directory)"
 [INFO] Default config would be used
 [INFO] Saving default config ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
