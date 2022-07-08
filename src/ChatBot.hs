@@ -50,7 +50,7 @@ data State = State
 
 -- /\ smart constructors? /\
 
-data Event a = SetRepeatitionCountEvent RepetitionCount
+data Event a = SetRepetitionCountEvent RepetitionCount
              | MessageEvent a
              deriving Show
 
@@ -63,7 +63,7 @@ type Title = Text
 type RepetitionCount = Int
 
 respond :: (Monad m, Message a) => Handle m -> Event a -> m [Response a]
-respond h (SetRepeatitionCountEvent n) = 
+respond h (SetRepetitionCountEvent n) = 
    handleChangeRepetitionCount h n
 respond h (MessageEvent msg) 
    | isCommand msg "/help"   = respondHelpCommand h
@@ -90,21 +90,20 @@ respondHelpCommand h = do
 respondRepeatCommnad :: Monad m => Handle m -> m [Response a] 
 respondRepeatCommnad h = do
    Logger.logInfo (hLoggerHandle h) "Got /repeat command"
-   repeatitionCount        <- fmap stateRepetitionCount . hGetState $ h
+   repetitionCount        <- fmap stateRepetitionCount . hGetState $ h
    let question            = cfgRepeatText . hConfig $ h
-   let title               = "Current repetition count: " .< repeatitionCount <> "\n" <> question
-   let maxRepeatitionCount = cfgMaxRepetitionsCount . hConfig $ h
-   let buttons             = [(n, SetRepeatitionCountEvent n) | n <- [1..maxRepeatitionCount]]
+   let title               = "Current repetition count: " .< repetitionCount <> "\n" <> question
+   let maxRepetitionCount = cfgMaxRepetitionsCount . hConfig $ h
+   let buttons             = [(n, SetRepetitionCountEvent n) | n <- [1..maxRepetitionCount]]
    return . singleton $ MenuResponse title buttons
 
 respondOnMessage :: (Monad m, Message a) => Handle m -> a -> m [Response a]
 respondOnMessage h msg = do
-   repeatitionCount <- fmap stateRepetitionCount . hGetState $ h
-   replicateM repeatitionCount $ echo h msg
-
-echo :: (Monad m, Message a) => Handle m -> a -> m (Response a)
-echo h msg = do
+   repetitionCount <- fmap stateRepetitionCount . hGetState $ h
    Logger.logInfo (hLoggerHandle h) $
-      "User sended message, echoing : "
+      "User sended message, echoing (" .< repetitionCount <>" times) : "
       <> (fromMaybe "<message can't be shown>" (messageToText msg))
-   return $ MessageResponse msg
+   replicateM repetitionCount . return $ echo msg
+
+echo :: Message a => a -> Response a
+echo = MessageResponse

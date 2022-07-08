@@ -1,74 +1,19 @@
-[INFO] User sended message, echoing : /hel
-[INFO] Got /help command
-[INFO] User sended message, echoing : aboba
 [INFO] Got /repeat command
 [INFO] User setted repetition count to: 2
-[INFO] User sended message, echoing : 2
-[INFO] User sended message, echoing : 2
-[INFO] User sended message, echoing : 123
-[INFO] User sended message, echoing : 123
-[INFO] User sended message, echoing : /repeat 1
-[INFO] User sended message, echoing : /repeat 1
-[INFO] Got /repeat command
-[INFO] User setted repetition count to: 1
-[INFO] User sended message, echoing : echo
-[INFO] User sended message, echoing : cool
-[INFO] Got /help command
 [INFO] User sended message, echoing : aboba
+[INFO] User sended message, echoing : aboba
+[INFO] Got /repeat command
+[INFO] User setted repetition count to: 4
+[INFO] User sended message, echoing : aboba4
+[INFO] User sended message, echoing : aboba4
+[INFO] User sended message, echoing : aboba4
+[INFO] User sended message, echoing : aboba4
+[INFO] Got /help command
+[INFO] Got /help command
+[INFO] User sended message, echoing (1 times) : aboba
 [INFO] Got /repeat command
 [INFO] User setted repetition count to: 5
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 4
-[INFO] User sended message, echoing : 4
-[INFO] User sended message, echoing : 4
-[INFO] User sended message, echoing : 4
-[INFO] User sended message, echoing : 4
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 1
-[INFO] User sended message, echoing : 123
-[INFO] Got /repeat command
-[INFO] User setted repetition count to: 1
-[INFO] User sended message, echoing : 1
-[INFO] User sended message, echoing : 1
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] User setted repetition count to: 1
-[INFO] User sended message, echoing : 
-[INFO] User sended message, echoing : 
-[INFO] Got /repeat command
-[INFO] User setted repetition count to: 2
-[INFO] Got /repeat command
-[INFO] User sended message, echoing : call
-[INFO] User sended message, echoing : call
-[INFO] Got /repeat command
-[INFO] Got /repeat command
-[INFO] User setted repetition count to: 1
+[INFO] User sended message, echoing (5 times) : aboba5
 [INFO] Got /help command
 [INFO] Got /repeat command
-[INFO] User setted repetition count to: 1
-[INFO] User sended message, echoing : aboba
+[INFO] User sended message, echoing (1 times) : :(

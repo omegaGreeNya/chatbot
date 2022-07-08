@@ -77,8 +77,12 @@ defaultConfig = AppConfig defaultChatBotConfig defaultLoggerConfig
 
 defaultChatBotConfig :: ChatBot.Config
 defaultChatBotConfig = ChatBot.Config
-   "/help text here"
-   "/repeat text here"
+   ("This bot will echo message back setted number of times\n"
+   <> "There is also special commands:\n"
+   <> "/help - shows this message\n"
+   <> "/repeat - change repetition count"
+   )
+   "Choose how mach echo you'r need."
    5
    1
 

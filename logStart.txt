@@ -9,3 +9,15 @@
 [INFO] Loading ""config.json""
 [INFO] Loading ""config.json""
 [INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[INFO] Loading ""config.json""
+[WARN]  is malformed, malformed version saved as ""config.jsonmalformed_""""config.json""
+[INFO] Saving ""config.jsonmalformed_""
+[INFO] Default config would be used
+[INFO] Saving default config ""config.json""
+[INFO] Loading ""config.json""
+[WARN]  is malformed, malformed version saved as ""malformed_config.json""""config.json""
+[INFO] Saving ""malformed_config.json""
+[INFO] Default config would be used
+[INFO] Saving default config ""config.json""
+[INFO] Loading "config.json"

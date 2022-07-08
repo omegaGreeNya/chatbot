@@ -1,1 +1,1 @@
-{"cfgChatBot":{"cfgHelpText":"/help text here","cfgRepeatText":"/repeat text here","cfgMaxRepetitionsCount":5,"cfgDefaultRepeatCount":1},"cfgLogger":{"cfgMinLogLevel":"INFO"}}
+{"cfgChatBot":{"cfgHelpText":"This bot will echo message back setted number of times\nThere is also special commands:\n/help - shows this message\n/repeat - change repetition count","cfgRepeatText":"Choose how mach echo you'r need.","cfgMaxRepetitionsCount":5,"cfgDefaultRepeatCount":1},"cfgLogger":{"cfgMinLogLevel":"INFO"}}

@@ -34,7 +34,7 @@ writeFileLog :: (MonadIO m, Show a)
              -> m (Either SomeException ()) -- ^ Error logged before returning
 writeFileLog saveF h logMessage path dataToSave = do
    Logger.logInfo h $
-      maybe ("Saving " .<~ path) id logMessage
+      maybe ("Saving " .< path) id logMessage
    result <- liftIO . try $ saveF path dataToSave
    case result of
       Left err -> logErr err >> return result
@@ -43,7 +43,7 @@ writeFileLog saveF h logMessage path dataToSave = do
       logErr err = 
          Logger.logError h
             $ "Error during saving " 
-            .<~ path
+            .< path
             <> " (file not saved): "
             .<~ err
 -- >>>
@@ -57,7 +57,7 @@ readFileLog :: (MonadIO m, Show a)
             -> m (Either SomeException a) -- ^ Error logged before returning
 readFileLog readF h logMessage path = do
    Logger.logInfo h $
-      maybe ("Loading " .<~ path) id logMessage
+      maybe ("Loading " .< path) id logMessage
    result <- liftIO . try $ readF path
    case result of
       Left err -> logErr err >> return result
@@ -66,7 +66,7 @@ readFileLog readF h logMessage path = do
       logErr err = 
          Logger.logError h
             $ "Error during loading " 
-            .<~ path
+            .< path
             <> " (file not loaded): "
             .<~ err
 -- >>>
@@ -76,13 +76,13 @@ readFileLog readF h logMessage path = do
 (.<~) text a = text <> "\"" <> (T.pack $ show a) <> "\""
 infixr 7 .<~ 
 (~>.) :: Show a => a -> Text -> Text
-(~>.) = flip (.<~)
+(~>.) a text = "\"" <> (T.pack $ show a) <> "\"" <> text
 infixr 7 ~>.
 (.<) :: Show a => Text -> a -> Text
 (.<) text a = text <> (T.pack $ show a)
 infixr 7 .<
 (>.) :: Show a => a -> Text -> Text
-(>.) = flip (.<)
+(>.) a text = (T.pack $ show a) <> text
 infixr 7 >.
 -- <> has precedence infixr 6. 
 -- And we define infixr 7 for [.<, ..] since we want replace them to <>, and then concatinate
@@ -96,7 +96,7 @@ renameFile path name = locPath <> name
       (locPath,_) = splitFileName path
 
 splitFileName :: FilePath -> (String, String)
-splitFileName = (\(xs, ys) -> (reverse xs, reverse ys)) . span (not . isPathSeparator) . reverse
+splitFileName = (\(xs, ys) -> (reverse ys, reverse xs)) . span (not . isPathSeparator) . reverse
 
 isPathSeparator :: Char -> Bool
 isPathSeparator '/'  = True
