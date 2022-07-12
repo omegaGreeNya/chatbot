@@ -71,7 +71,7 @@ readFileLog readF h logMessage path = do
             .<~ err
 -- >>>
 
--- <<<< Formating
+-- <<<< Text manipulations / Formating
 (.<~) :: Show a => Text -> a -> Text
 (.<~) text a = text <> "\"" <> (T.pack $ show a) <> "\""
 infixr 7 .<~ 

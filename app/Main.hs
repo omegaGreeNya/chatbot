@@ -21,7 +21,7 @@ main = do
          hBot <- createBotHandle (Config.cfgChatBot appCfg) hLowLogger
          Console.run (Console.Handle hBot)
       
-   
+-- move to Config
 initAppConfiguration :: IO AppConfig
 initAppConfiguration = do
    withFile "logStart.txt" AppendMode $ \startUpLogFileHandle -> do

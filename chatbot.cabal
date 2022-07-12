@@ -28,6 +28,8 @@ library
       ChatBot.Init
       Config
       FrontEnd.Console
+      FrontEnd.Telegram
+      FrontEnd.Telegram.API
       Lib
       Logger
       Logger.Impl
@@ -47,6 +49,9 @@ library
     , base >=4.7 && <5
     , bytestring
     , hspec
+    , http-conduit
+    , lens
+    , lens-aeson
     , mtl
     , text
   default-language: Haskell2010
@@ -68,6 +73,9 @@ executable echo-bot-exe
     , bytestring
     , chatbot
     , hspec
+    , http-conduit
+    , lens
+    , lens-aeson
     , mtl
     , text
   default-language: Haskell2010
@@ -90,6 +98,9 @@ test-suite echo-bot-test
     , bytestring
     , chatbot
     , hspec
+    , http-conduit
+    , lens
+    , lens-aeson
     , mtl
     , text
   default-language: Haskell2010

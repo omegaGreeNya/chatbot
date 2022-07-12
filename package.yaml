@@ -25,8 +25,11 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - aeson
+- lens-aeson
+- lens
 - bytestring
 - hspec
+- http-conduit
 - mtl
 - text
 - QuickCheck
