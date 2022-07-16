@@ -52,7 +52,7 @@ data InlineKeyboardMarkup = InlineKeyboardMarkup
    { _inline_keyboard :: [[InlineKeyboardButton]]  -- ^ Array of arrays of key-buttons. Each inner array is a row in keyboard.
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''Message
+deriveJSON telegramDerivingOptions ''InlineKeyboardMarkup
 
 
 -- | One button of inline keyboard. We always intrested in callback query, but there may be present other actions on press.
@@ -68,8 +68,8 @@ deriveJSON telegramDerivingOptions ''InlineKeyboardButton
 -- | Update data field, represents incoming query from callback button in an inline_keyboad.
 --    https://core.telegram.org/bots/api/#callbackquery
 data CallbackQuery = CallbackQuery
-   { _id   :: CallbackQuery_id -- ^ Unique query id 
-   , _from               :: User             -- ^ User, that sended callback query
+   { _id   :: Text -- ^ Unique query id 
+   , _from :: User -- ^ User, that sended callback query
    } deriving (Show)
 
 deriveJSON telegramDerivingOptions ''CallbackQuery
