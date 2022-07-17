@@ -52,6 +52,7 @@ library
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , hspec
     , http-conduit
     , lens
@@ -76,6 +77,7 @@ executable echo-bot-exe
     , base >=4.7 && <5
     , bytestring
     , chatbot
+    , containers
     , hspec
     , http-conduit
     , lens
@@ -101,6 +103,7 @@ test-suite echo-bot-test
     , base >=4.7 && <5
     , bytestring
     , chatbot
+    , containers
     , hspec
     , http-conduit
     , lens

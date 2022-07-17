@@ -25,13 +25,15 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - aeson
+- bytestring
+- containers
 - lens-aeson
 - lens
-- bytestring
-- hspec
 - http-conduit
 - mtl
 - text
+# Tests
+- hspec
 - QuickCheck
 
 ghc-options:
