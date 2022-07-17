@@ -1,11 +1,11 @@
 -- | This module provides user abstraction,
 -- and simpliest User data-base with methods.
 --
--- This module heavely exploits phantom types for restricting adding @User@ into unsuit @Map@ on type level.
+-- This module heavely exploits phantom types for restricting adding @User@ into unsuit @Map@ on the type level.
 -- More info about Phantom types: https://wiki.haskell.org/Phantom_type
 --                                https://kowainik.github.io/posts/haskell-mini-patterns#phantom-type-parameters
 --
--- Notice what Module do not export Data Constructors for UserId/User/UsersMap. Only smart constructors for them.
+-- Notice that Module do not export Data Constructors for UserId/User/UsersMap. Only smart constructors and special acessors for them.
 --
 -- To-Do
 -- It should be fine with immutable maps, but for simple dead-birth echo bot should be sufficient.
@@ -48,22 +48,22 @@ data Config = Config
    -- ^ Default, would be assigned to new users.
    } deriving (Show)
 
--- Phantom Type Constructor.
+-- | Phantom Type Constructor.
 data Telegram
 
 -- | User id parametrized by phantom Type Constructor.
 -- As protection to this design decision, i should say that some api may have literals ids.
 data UserId db
-   = TelegramUser Int
+   = TelegramUserId Int
    -- ^ Telegram uses ints as id , max is 2^52, Int is enough
-   | VKUser String
-   -- ^ JUST SHOWCASE. Not used. defined to mute pattern-match warnings.
+   | VKUserId String
+   -- ^ JUST SHOWCASE. Not used. Defined to mute reduntant-pattern-match warnings.
    deriving (Show, Eq, Ord)
 
 -- | Returns user identifier, if UserID malformed returns Nothing 
 getTelegramUserId :: UserId Telegram -> Maybe Int
-getTelegramUserId (TelegramUser n) = Just n
-getTelegramUserId _                = Nothing
+getTelegramUserId (TelegramUserId n) = Just n
+getTelegramUserId _                  = Nothing
 
 -- | User id and reference for his state. Phantom Type Constructor represents platform user from.
 data User db = User
@@ -86,13 +86,14 @@ newtype UsersMap db = UsersMap
    { getUsersMap :: Map (UserId db) (User db)
    }
 
+-- | Creates Telegram User. It's strongly recomended to add user into map with add*User afterwards.
 createTelegramUser :: MonadIO m
-                   => Handle m -- ^ @Handle@
-                   -> Int      -- ^ Telegram user id
-                   -> m (UserId Telegram, User Telegram) 
+                   => Handle 
+                   -> Int                                -- ^ Telegram user id
+                   -> m (UserId Telegram, User Telegram) -- ^ Signed user id, and his setting container.
 createTelegramUser h uId = do
    let newState = UserState (cfgRepetitionCount . hConfig $ h)
-       newId = TelegramUser uId
+       newId = TelegramUserId uId
    newRef <- liftIO $ newIORef newState
    let newUser = User newId newRef
    logInfo (hLogger h) $
@@ -102,15 +103,16 @@ createTelegramUser h uId = do
 -- | Adds Telegram User into Map. If user is already presents, logs error and returns same map.
 addTelegramUser :: (Monad m)
                 => Handle m
-                -> UsersMap Telegram -- ^ Telegram users Map to update
-                -> User Telegram    -- ^ New user to add
+                -> UsersMap Telegram     -- ^ Telegram users Map to update
+                -> User Telegram         -- ^ New user to add
                 -> m (UsersMap Telegram) -- ^ Updated Users Map
-addTelegramUser h uMap' user@(User uId@(TelegramUser _) _) = do
+addTelegramUser h uMap' user@(User uId@(TelegramUserId _) _) = do
    let uMap = getUsersMap uMap'
    logInfo (hLogger h) $ "Added " .<~ uId <> " into Telegram Map."
    when (Map.member uId uMap) $
       logWarning (hLogger h) $
          "Tried to add User with" .<~ uId <> " but it was already there. Map contains references! Not actual data!"
+         <> "If you want to update user State, make a lookup and modify State be it's Ref."
    return . UsersMap $ 
       Map.insertWith (const id) uId user uMap
 addTelegramUser h uMap (User uId _) = do
@@ -125,7 +127,7 @@ lookupTelegramUser :: (Monad m)
                    -> UsersMap Telegram         -- ^ Telegram users Map to update
                    -> UserId Telegram           -- ^ Telegram user id to lookup
                    -> m (Maybe (User Telegram)) -- ^ Updated Users Map
-lookupTelegramUser h uMap' uId@(TelegramUser _) = do
+lookupTelegramUser h uMap' uId@(TelegramUserId _) = do
    let uMap = getUsersMap uMap'
    logDebug (hLogger h) $ "Searched " .<~ uId <> " in Telegram Map."
    return $ 
