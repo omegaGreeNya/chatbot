@@ -30,11 +30,15 @@ library
       FrontEnd.Console
       FrontEnd.Telegram
       FrontEnd.Telegram.API
+      FrontEnd.Telegram.API.DerivingExt
+      FrontEnd.Telegram.API.Methods
+      FrontEnd.Telegram.API.Types
       Lib
       Logger
       Logger.Impl
       Logger.Init
       Message
+      User
   other-modules:
       Paths_chatbot
   hs-source-dirs:

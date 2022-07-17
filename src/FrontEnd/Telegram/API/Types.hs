@@ -1,26 +1,19 @@
+-- | Telegram API domain model
+--    Model contains only necessary data, and provides ToJSON/FromJSON instances
+-- Record fields of data structures follows telegram API namings with underscore in front
+-- Like so: _<API FIELD NAME>
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE TemplateHaskell       #-}
--- Telegram API domain model
---    Model contains only necessary data, and provides "json -> ADT" constructors
--- Record fields of data structures follows telegram API namings with underscore in front
-
 
 -- To Do
 -- Test encoding decoding
--- !im actually not sure about this field!
 module FrontEnd.Telegram.API.Types
-   ( 
-   ) where
+   where
 
-import Data.Aeson.TH (Options (..), defaultOptions, deriveJSON)
+import Data.Aeson.TH (deriveJSON)
 import Data.Text (Text)
-import Data.ByteString.Char8 (ByteString)
 
-telegramDerivingOptions :: Options
-telegramDerivingOptions = defaultOptions
-   { fieldLabelModifier = drop 1
-   , omitNothingFields = True
-   }
+import FrontEnd.Telegram.API.DerivingExt (telegramDerivingOptions)
 
 -- | Incoming update. AT MOST ONE of the optional parameters can be present in single update.
 --    https://core.telegram.org/bots/api/#update
@@ -29,8 +22,6 @@ data Update = Update
    , _message        :: Maybe Message       -- ^ Text message update
    , _callback_query :: Maybe CallbackQuery -- ^ Button press update 
    } deriving (Show) 
-
-deriveJSON telegramDerivingOptions ''Update
 
 -- | Telegram message.
 --    https://core.telegram.org/bots/api/#message
@@ -44,26 +35,19 @@ data Message = Message
    , _reply_markup :: Maybe InlineKeyboardMarkup -- ^ Inline keyboard
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''Message
-
 -- | Inline keyboard, optional field for Message, represents buttons with specified action on press.
 --    https://core.telegram.org/bots/api/#inlinekeyboardmarkup
 data InlineKeyboardMarkup = InlineKeyboardMarkup
    { _inline_keyboard :: [[InlineKeyboardButton]]  -- ^ Array of arrays of key-buttons. Each inner array is a row in keyboard.
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''InlineKeyboardMarkup
-
-
 -- | One button of inline keyboard. We always intrested in callback query, but there may be present other actions on press.
 --    https://core.telegram.org/bots/api/#inlinekeyboardbutton
 data InlineKeyboardButton = InlineKeyboardButton
    { _text          :: Text        -- ^ Key text
    , _callback_data :: Maybe Text  -- ^ Data to be sent on key press.
-                                  -- In our case it always Just Text, if not - it's a bug.
+                                   -- In our case it always Just Text, if not - it's a bug.
    } deriving (Show)
-
-deriveJSON telegramDerivingOptions ''InlineKeyboardButton
 
 -- | Update data field, represents incoming query from callback button in an inline_keyboad.
 --    https://core.telegram.org/bots/api/#callbackquery
@@ -72,23 +56,17 @@ data CallbackQuery = CallbackQuery
    , _from :: User -- ^ User, that sended callback query
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''CallbackQuery
-
 -- | Telegram user data
 --    https://core.telegram.org/bots/api/#user
 data User = User
    { _id :: Int -- ^ Unique user id
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''User
-
 -- | Telegram chat data
 --    https://core.telegram.org/bots/api/#chat
 data Chat = Chat
    { _id :: Int -- ^ Unique chat id
    } deriving (Show)
-
-deriveJSON telegramDerivingOptions ''Chat
 
 -- | Entities for text message, usertags, markup, hashtags, etc
 --    https://core.telegram.org/bots/api/#messageentity
@@ -100,8 +78,6 @@ data MessageEntity = MessageEntity
    , _user     :: Maybe User  -- ^ For “text_mention” entities only, the mentioned user
    , _language :: Maybe Text  -- ^ For “pre” entities only, the programming language of the entity text
    } deriving (Show)
-   
-deriveJSON telegramDerivingOptions ''MessageEntity
 
 -- | Telegram sticker data
 --    https://core.telegram.org/bots/api/#sticker
@@ -119,8 +95,6 @@ data Sticker = Sticker
    , _file_size         :: Int          -- ^ File size in bytes
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''Sticker
-
 -- | This object represents a file ready to be downloaded. 
 --    The file can be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>.
 --    It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile.
@@ -133,8 +107,6 @@ data File = File
    , _file_path      :: Maybe Text -- ^ File path. Use https://api.telegram.org/file/bot<token>/<file_path> to get the file.
    } deriving (Show)
 
-deriveJSON telegramDerivingOptions ''File
-
 -- im not ganna test this, just beacouse.
 -- | This object describes the position on faces where a mask should be placed by default.
 --    https://core.telegram.org/bots/api/#maskposition
@@ -145,13 +117,33 @@ data MaskPosition = MaskPosition
    , _scale   :: Float -- ^ Mask scaling coefficient. For example, 2.0 means double size.
    } deriving (Show)
 
+-- WARN: IF YOU ADD NEW DATA, ADD IT'S INSTANCE HERE
+-- I might rework this later, but for now it's ok..
+--
+-- Due template compication specific, all inner types
+-- of templating structure should be defined in previous lines.
+-- So i just write all the bunch here.
+-- Ofcourse it's possible to re-arrenge them to solve conflicts,
+-- But there may be presented some king of a loop (not checked).
+deriveJSON telegramDerivingOptions ''Update
+deriveJSON telegramDerivingOptions ''Message
+deriveJSON telegramDerivingOptions ''InlineKeyboardMarkup
+deriveJSON telegramDerivingOptions ''InlineKeyboardButton
+deriveJSON telegramDerivingOptions ''CallbackQuery
+deriveJSON telegramDerivingOptions ''User
+deriveJSON telegramDerivingOptions ''Chat
+deriveJSON telegramDerivingOptions ''MessageEntity
+deriveJSON telegramDerivingOptions ''Sticker
+deriveJSON telegramDerivingOptions ''File
 deriveJSON telegramDerivingOptions ''MaskPosition
+-- And sicnce methods use only data types above, it is save
+-- to deriveJSON in more pleasant form, right after data definition
 
 -- Helpful type to construct methods with json Request Bodies.
---   Same, they only cares about necessary data
+-- Same, they only cares about necessary data
 
 -- | sendMessage method data
---    https://core.telegram.org/bots/api#sendmessage
+-- https://core.telegram.org/bots/api#sendmessage
 data SendMessage = SendMessage
    { _chat_id      :: Int
    , _text         :: Text
@@ -160,9 +152,11 @@ data SendMessage = SendMessage
 
 deriveJSON telegramDerivingOptions ''SendMessage
 
+-- | sendSticker method data
+-- https://core.telegram.org/bots/api#sendsticker
 data SendSticker = SendSticker
    { _chat_id      :: Int
-   , _sticker      :: FilePath -- !im actually not sure about this field!
+   , _sticker      :: Text -- !im actually not sure about this field!
    } deriving (Show)
 
 deriveJSON telegramDerivingOptions ''SendSticker

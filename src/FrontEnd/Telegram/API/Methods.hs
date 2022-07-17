@@ -1,24 +1,33 @@
 -- | Telegram API methods constructors.
 --    Provided functions do not make actual calls, they only construct Request type. 
-
+{-# LANGUAGE DefaultSignatures #-}
 -- to-do
 -- Is Handle really should have hGetOffset function?
--- Im not setting any Headers, if sending json bodyes goes wrong, fixing headers might help.
--- !!!fix headers!!!
--- defaultTelegramRequest looks redundant
+-- Test UNTESTED
 module FrontEnd.Telegram.API.Methods
-   ( Handle
-   , Config
+   ( Handle(..)
+   , Config(..)
    , getUpdates
    , sendMessage
-   , sendFile
-   )where
+   , sendSticker
+   , fileTelegramRequest
+   , getFile
+   ) where
 
-import Data.Aeson (Request)
-import Network.HTTP.Simple (, defualtRequest)
+import Data.ByteString (ByteString)
+import Data.Text (Text)
+import Data.Text.Encoding (encodeUtf8)
+import Network.HTTP.Simple ( Request
+                           , setRequestMethod
+                           , setRequestHost
+                           , setRequestPath
+                           , setRequestQueryString
+                           , setRequestBodyJSON
+                           , defaultRequest
+                           )
 import qualified Data.ByteString.Char8 as BS8
 
-import qualified FrontEnd.Telegram.Types as T
+import qualified FrontEnd.Telegram.API.Types as T
 
 -- | Telegram API calls handle
 data Handle m = Handle
@@ -26,19 +35,19 @@ data Handle m = Handle
    , hGetOffset :: m Int  -- ^ This action provides message offset. 
                           --      Offset used to inform telegram server from witch id updates we intrested in.
                           --      Be careful thogth, telegram will never return update once it's id was less than offset.
-                          --      offset should be changed by caller logic.
+                          --      Offset should be changed only by caller logic.
                           --      More info here: https://core.telegram.org/bots/api#getupdates
    }
 
 data Config = Config
    { cfgHost    :: ByteString -- ^ Telegram api url (must be api.telegram.org)
    , cfgToken   :: ByteString -- ^ Bot token
-   , cfgTimeout :: Int        -- ^ Time in seconds, to wait for long polls.
+   , cfgTimeout :: Int        -- ^ Time in seconds for long polling.
    } deriving Show
 
 -- | Produce GET Request with empty body and query
 defaultTelegramRequest :: Handle m       -- ^ Telegram methods constructor @Handle@
-                       -> BS8.ByteString -- ^ Telegram method (e. "getUpdates")
+                       -> ByteString -- ^ Telegram method (e. "getUpdates")
                        -> Request        -- ^ 
 defaultTelegramRequest h method = let
       token = cfgToken . hConfig $ h
@@ -48,24 +57,14 @@ defaultTelegramRequest h method = let
    $  defaultRequest
 
 
--- | Produce GET Request with empty body and query
-fileTelegramRequest :: Handle m  -- ^ Telegram methods constructor @Handle@
-                    -> Text      -- ^ File path, provided by response (see https://core.telegram.org/bots/api#getfile)
-                    -> Request   -- ^ GET Request with empty body and query
-fileTelegramRequest h filePath = let
-      token = cfgToken . hConfig $ h
-      path = "/file/bot" <> token <> "/" <> filePath
-   in setRequestHost (cfgHost . hConfig $ h)
-   $  setRequestPath path
-   $  defaultRequest
 
--- | Construct telegram @Request@ for geting updates. OK-Response contains up to 100 updates.
+-- | Construct telegram @Request@ for geting updates. OK-Response contains list of up to 100 updates.
 --    https://core.telegram.org/bots/api#getupdates
-getUpdates :: Handle m -> m Request
+getUpdates :: (Monad m) => Handle m -> m Request
 getUpdates h = do
    offset <- hGetOffset h
    let timeout = cfgTimeout . hConfig $ h
-   return $ setRequestQueryString [("offset", Just offset), ("timeout", timeout)]
+   return $ setRequestQueryString [("offset", packQVal offset), ("timeout", packQVal timeout)]
           $ defaultTelegramRequest h "getUpdates"
 
 -- | Construct telegram @Request@ for sending message.
@@ -78,15 +77,46 @@ sendMessage h msg =
 
 -- | Construct telegram @Request@ for sending Sticker from file.
 --    https://core.telegram.org/bots/api#sendsticker   
-sendSticker :: Handle -> T.SendSticker -> Request
+-- UNTESTED
+sendSticker :: Handle m -> T.SendSticker -> Request
 sendSticker h sticker =
    setRequestMethod "POST" -- actually not necessary for telegram
    $ setRequestBodyJSON sticker -- !!!fix headers!!!
    $ defaultTelegramRequest h "sendMessage"
 
--- | Construct telegram @Request@ for downloading file.
+-- | Construct telegram @Request@.
+-- Telegram returns object with file_id, file_unique_id, file_size, file_path.
 --    https://core.telegram.org/bots/api#getfile
 getFile :: Handle m  -- ^ Telegram methods constructor @Handle@
-        -> Text      -- ^ File path
+        -> Text      -- ^ file_id
         -> Request   -- ^ GET Request with empty body and query
-getFile = fileTelegramRequest
+getFile h fileId =
+   setRequestQueryString [("file_id", packQVal fileId)]
+   $ defaultTelegramRequest h "getFile"
+
+-- | Produce GET Request. Telegram will answer with file data.
+fileTelegramRequest :: Handle m  -- ^ Telegram methods constructor @Handle@
+                    -> Text      -- ^ File path, provided by response (see https://core.telegram.org/bots/api#getfile)
+                    -> Request   -- ^
+fileTelegramRequest h filePath = let
+      filePathBS = toBS filePath
+      token = cfgToken . hConfig $ h
+      path = "/file/bot" <> token <> "/" <> filePathBS
+   in setRequestHost (cfgHost . hConfig $ h)
+   $  setRequestPath path
+   $  defaultRequest
+
+-- | Type class for easy, dead-brain encoding ByteStrings
+class ToByteString a where
+   toBS :: a -> ByteString
+   default toBS :: Show a => a -> ByteString
+   toBS = BS8.pack . show
+
+instance ToByteString Int
+instance ToByteString Bool
+instance ToByteString Text where
+   toBS = encodeUtf8
+
+-- | Helper function for packing query items.
+packQVal :: ToByteString a => a -> Maybe ByteString
+packQVal a = Just $ toBS a
