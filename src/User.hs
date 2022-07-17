@@ -6,9 +6,10 @@
 --                                https://kowainik.github.io/posts/haskell-mini-patterns#phantom-type-parameters
 --
 -- Notice that Module do not export Data Constructors for UserId/User/UsersMap. Only smart constructors and special acessors for them.
---
+{-# LANGUAGE FlexibleInstances #-} -- for Show instance with Phatom type
+{-# LANGUAGE FlexibleContexts  #-} -- for Type Signature context with Phantom type
 -- To-Do
--- It should be fine with immutable maps, but for simple dead-birth echo bot should be sufficient.
+-- It's possible to rework for mutable maps, but for simple dead-birth echo bot should be sufficient.
 module User 
    ( Handle (..)
    , Telegram
@@ -20,8 +21,8 @@ module User
    , UserState (..)
    , UsersMap
    , createTelegramUser
-   , addTelegramUser
-   , lookupTelegramUser
+   , addUser
+   , lookupUser
    ) where
 
 import Control.Monad (when)
@@ -31,7 +32,7 @@ import Data.IORef (IORef, newIORef)
 import qualified Data.Map.Strict as Map (insertWith, lookup, member)
 
 import Lib ((.<~))
-import Logger (logInfo, logError, logDebug, logWarning)
+import Logger (logInfo, logDebug, logWarning)
 import qualified Logger
 
 -- | User manipulation handle.
@@ -50,6 +51,7 @@ data Config = Config
 
 -- | Phantom Type Constructor.
 data Telegram
+-- DO NOT FORGET TO ADD SHOW INSTANCE FOR NEW USERSMAP OF ADDED PHANTOM
 
 -- | User id parametrized by phantom Type Constructor.
 -- As protection to this design decision, i should say that some api may have literals ids.
@@ -77,7 +79,7 @@ data User db = User
 
 -- | Actual User data. @User@ contains only reference on @UserState@
 data UserState = UserState
-   { uSRepetitionCount :: Int
+   { userRepetitionCount :: Int
    -- ^ How much echoed message user should receive
    } deriving (Show)
 
@@ -86,9 +88,12 @@ newtype UsersMap db = UsersMap
    { getUsersMap :: Map (UserId db) (User db)
    }
 
--- | Creates Telegram User. It's strongly recomended to add user into map with add*User afterwards.
+instance Show (UsersMap Telegram) where
+   show = const "Telegram Map"
+
+-- | Creates Telegram User. It's strongly recomended to add user into map with addUser afterwards.
 createTelegramUser :: MonadIO m
-                   => Handle 
+                   => Handle m
                    -> Int                                -- ^ Telegram user id
                    -> m (UserId Telegram, User Telegram) -- ^ Signed user id, and his setting container.
 createTelegramUser h uId = do
@@ -101,40 +106,29 @@ createTelegramUser h uId = do
    return (newId, newUser)
 
 -- | Adds Telegram User into Map. If user is already presents, logs error and returns same map.
-addTelegramUser :: (Monad m)
-                => Handle m
-                -> UsersMap Telegram     -- ^ Telegram users Map to update
-                -> User Telegram         -- ^ New user to add
-                -> m (UsersMap Telegram) -- ^ Updated Users Map
-addTelegramUser h uMap' user@(User uId@(TelegramUserId _) _) = do
+addUser :: (Monad m, Show (UsersMap db))
+        => Handle m
+        -> UsersMap db     -- ^ Telegram users Map to update
+        -> User db         -- ^ New user to add
+        -> m (UsersMap db) -- ^ Updated Users Map
+addUser h uMap' user@(User uId _) = do
    let uMap = getUsersMap uMap'
-   logInfo (hLogger h) $ "Added " .<~ uId <> " into Telegram Map."
+   logInfo (hLogger h) $ "Added " .<~ uId <> " into " .<~ uMap'
    when (Map.member uId uMap) $
       logWarning (hLogger h) $
          "Tried to add User with" .<~ uId <> " but it was already there. Map contains references! Not actual data!"
-         <> "If you want to update user State, make a lookup and modify State be it's Ref."
+         <> "If you want to update user State, make a lookup and modify State by it's Ref."
    return . UsersMap $ 
       Map.insertWith (const id) uId user uMap
-addTelegramUser h uMap (User uId _) = do
--- This should never happen, but if happens, we log error and don't add user.
-   logError (hLogger h) $
-      "Can't add " .<~ uId <> " into Telegram Map. Probably UserId was wrong constucted. User was not added."
-   return uMap
 
 -- | Looks up user in Telegram Map.
-lookupTelegramUser :: (Monad m)
-                   => Handle m
-                   -> UsersMap Telegram         -- ^ Telegram users Map to update
-                   -> UserId Telegram           -- ^ Telegram user id to lookup
-                   -> m (Maybe (User Telegram)) -- ^ Updated Users Map
-lookupTelegramUser h uMap' uId@(TelegramUserId _) = do
+lookupUser :: (Monad m, Show (UsersMap db))
+           => Handle m
+           -> UsersMap db         -- ^ Telegram users Map to update
+           -> UserId db           -- ^ Telegram user id to lookup
+           -> m (Maybe (User db)) -- ^ Updated Users Map
+lookupUser h uMap' uId = do
    let uMap = getUsersMap uMap'
-   logDebug (hLogger h) $ "Searched " .<~ uId <> " in Telegram Map."
+   logDebug (hLogger h) $ "Searched " .<~ uId <> " in " .<~ uMap'
    return $ 
       Map.lookup uId uMap
-lookupTelegramUser h _ uId = do
--- This should never happen, but if happens, we log error and return Nothing.
-   logError (hLogger h) $
-      "Tried to search " .<~ uId <> " in Telegram Map. Probably UserId was wrong constucted."
-   return Nothing
-
