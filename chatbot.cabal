@@ -38,7 +38,8 @@ library
       Logger.Impl
       Logger.Init
       Message
-      User
+      User.DataBase
+      User.Telegram
   other-modules:
       Paths_chatbot
   hs-source-dirs:
