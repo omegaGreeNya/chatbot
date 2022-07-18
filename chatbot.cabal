@@ -38,6 +38,7 @@ library
       Logger.Impl
       Logger.Init
       Message
+      User
       User.DataBase
       User.Telegram
   other-modules:
