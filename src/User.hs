@@ -1,12 +1,15 @@
 -- | This module provides functions for working with DataBase based on UserId and User from User.DataBase module.
 -- Currently implemented platforms: Telegram API users States (User.Telegram).
 module User
-   ( module User.DataBase
+   ( module X
    , Handle(..)
    , addUser
    , deleteUser
    , lookupUser
    ) where
+
+-- We hide inner functions of DB class, and export only Data Types
+import User.DataBase as X (DB(UserId, User, DataBase))
 
 import User.DataBase (DB(..))
 import Lib ((.<~))

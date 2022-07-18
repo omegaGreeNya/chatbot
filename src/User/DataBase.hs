@@ -18,8 +18,9 @@ import Data.Kind (Type)
 -- | This class unifies working with different user types, from different front-end or data bases.
 -- UserId is the key, and User is Value.
 -- If you want to store mutable Values, make such User that contains reference for mutable variable.
--- Defining instance of this class provides acces to working with functions from this module.
--- Designed to be used with phantom db, since we don't need any data inside db. But this is not a requirement.
+-- Class designed to be used with phantom db, since we don't need any data inside db. But this is not a requirement.
+-- Defining instance of this class provides access to working with functions from User module.
+-- After providing instance, you will only need do make initializing @DataBase@ functional to start working with @DataBase@.
 class ( Show (UserId db)
       , Ord  (UserId db)
       , Show (DataBase db))
