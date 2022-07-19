@@ -7,13 +7,13 @@
 
 -- To Do
 -- Test encoding decoding
-module FrontEnd.Telegram.API.Types
+module API.Telegram.Types
    where
 
 import Data.Aeson.TH (deriveJSON)
 import Data.Text (Text)
 
-import FrontEnd.Telegram.API.DerivingExt (telegramDerivingOptions)
+import API.Telegram.DerivingExt (telegramDerivingOptions)
 
 -- | Incoming update. AT MOST ONE of the optional parameters can be present in single update.
 --    https://core.telegram.org/bots/api/#update

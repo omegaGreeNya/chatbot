@@ -4,7 +4,7 @@
 -- to-do
 -- Is Handle really should have hGetOffset function?
 -- Test UNTESTED
-module FrontEnd.Telegram.API.Methods
+module API.Telegram.Methods
    ( Handle(..)
    , Config(..)
    , getUpdates
@@ -27,7 +27,7 @@ import Network.HTTP.Simple ( Request
                            )
 import qualified Data.ByteString.Char8 as BS8
 
-import qualified FrontEnd.Telegram.API.Types as T
+import qualified API.Telegram.Types as T
 
 -- | Telegram API calls handle
 data Handle m = Handle

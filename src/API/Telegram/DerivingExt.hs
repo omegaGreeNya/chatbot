@@ -1,6 +1,6 @@
 -- | This module needed for precompiling template haskell parametrs (telegramDerivingOptions)
 -- Due TH specific, we can't define options in same module there template is used.
-module FrontEnd.Telegram.API.DerivingExt
+module API.Telegram.DerivingExt
    (telegramDerivingOptions)
    where
 
