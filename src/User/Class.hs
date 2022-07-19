@@ -8,9 +8,10 @@
 -- See User.Telegram for example of instance of DB class.
 -- See FrontEnd for example of using @BotUser@ class functional.
 -- To-Do 
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+-- Add default methods, if it's reasonable.
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FunctionalDependencies #-}
 module User.Class
    ( BotUser(..)
@@ -54,7 +55,7 @@ class ( Show (UserId user)
    modifyBotStateUM   :: (ChatBot.State -> ChatBot.State) -> (UserId user) -> (UsersMap user) -> m ()
    -- ^ Function for updating @ChatBot.State@ for user with @UserID@. 
    -- YOU DON'T NEED TO CARE DOES @UsersMap@ CONTAINS @UserId@ OR NOT, JUST "return ()" IF USERID WASN'T FOUND.
-   -- This is inner function, and functions from User module will wrap modifyBotStateDB in a proper way.
+   -- This is inner function, and functions from User module will wrap modifyBotStateUM in a proper way.
    fromListUM       :: [(UserId user, User user)] -> m (UsersMap user)
    -- ^ Creats Data Base from pairs of id and vals. Should return empty UsersMap on empty List.
    insertWithUM     :: (User user -> User user -> User user) -> UserId user -> User user -> UsersMap user -> m (UsersMap user)
