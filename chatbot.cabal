@@ -24,22 +24,23 @@ source-repository head
 
 library
   exposed-modules:
+      API.Telegram
+      API.Telegram.DerivingExt
+      API.Telegram.Methods
+      API.Telegram.Types
       ChatBot
       ChatBot.Init
       Config
+      FrontEnd
       FrontEnd.Console
       FrontEnd.Telegram
-      FrontEnd.Telegram.API
-      FrontEnd.Telegram.API.DerivingExt
-      FrontEnd.Telegram.API.Methods
-      FrontEnd.Telegram.API.Types
       Lib
       Logger
       Logger.Impl
       Logger.Init
       Message
       User
-      User.DataBase
+      User.Class
       User.Telegram
   other-modules:
       Paths_chatbot

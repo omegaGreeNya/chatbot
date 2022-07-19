@@ -1,71 +1,77 @@
--- | This module provides functions for working with DataBase based on UserId and User from User.DataBase module.
--- Currently implemented platforms: Telegram API users States (User.Telegram).
+-- | This module provides functions for working with users based @BotUser@ class User.Class module.
+-- Currently implemented platforms: Telegram API users (module User.Telegram).
 module User
    ( module X
-   , Handle(..)
    , addUser
    , deleteUser
    , lookupUser
    ) where
 
--- We hide inner functions of DB class, and export only Data Types
-import User.DataBase as X (DB(UserId, User, DataBase))
+-- We HIDE UsersMap manipulation functions of BotUser class.
+import User.Class as X
+   (BotUser
+      ( UserId, User, UsersMap        -- Associated Data Types
+      , newUserId, defaultUser        -- UserId and User smart-constructors
+      , getBotState, modifyBotStateUM -- ChatBot.State methods for UsersMap
+      )
+   )
 
-import User.DataBase (DB(..))
+import User.Class (BotUser(..))
 import Lib ((.<~))
 import Logger (logDebug, logWarning)
-import qualified Logger
 
-data Handle m = Handle
-   { hLogger :: Logger.Handle m
-   }
-
--- | Adds @User@ into @DataBase@. If user already there, logs error and returns same map.
-addUser :: (Monad m, DB db)
-        => Handle m
-        -> UserId db       -- ^ Id of new user to add
-        -> User db         -- ^ New user to add
-        -> DataBase db     -- ^ DataBase to update
-        -> m (DataBase db) -- ^ Updated Users Map
-addUser h newUserId newUser dataBase =
-   if (memberDB newUserId dataBase)
+-- | Adds @User@ into @UsersMap@. If user already there, logs error and returns same map.
+addUser :: (BotUser user m t)
+        => user
+        -> UserId user       -- ^ Id of new user to add
+        -> User user         -- ^ New user to add
+        -> UsersMap user     -- ^ UsersMap to update
+        -> m (UsersMap user) -- ^ Updated Users Map
+addUser u userId user usersMap = do
+   mapName <- getUsersMapName u
+   presented <- memberUM userId usersMap
+   if presented
    then do
-      logWarning (hLogger h) $
-         "Tried to add User with" .<~ newUserId <> " but it was already in " .<~ dataBase <> "."
-      return dataBase
+      logWarning (getLoggerHandle u) $
+         "Tried to add User with" .<~ userId <> " but this id was already in \"" <> mapName <> "\"."
+      return usersMap
    else do
-      logDebug (hLogger h) $ "Added " .<~ newUserId <> " into " .<~ dataBase <> "."
-      return $ insertWithDB (const id) newUserId newUser dataBase
+      logDebug (getLoggerHandle u) $ "Added " .<~ userId <> " into \"" <> mapName <> "\"."
+      insertWithUM (const id) userId user usersMap
 
--- | Delets @User@ from @DataBase@. If DataBase doesn't contain provided @UserId@ logs warning.
-deleteUser :: (Monad m, DB db)
-           => Handle m
-           -> UserId db       -- ^ Id of new user to add
-           -> DataBase db     -- ^ Telegram users Map to delete from
-           -> m (DataBase db) -- ^ Updated Users Map
-deleteUser h userId dataBase =
-   if (not $ memberDB userId dataBase)
+-- | Delets @User@ from @UsersMap@. If @UsersMap@ doesn't contain provided @UserId@ logs warning.
+deleteUser :: (BotUser user m t)
+           => user
+           -> UserId user       -- ^ Id of new user to add
+           -> UsersMap user     -- ^ Telegram users Map to delete from
+           -> m (UsersMap user) -- ^ Updated Users Map
+deleteUser u userId usersMap = do
+   mapName <- getUsersMapName u
+   presented <- memberUM userId usersMap
+   if (not presented)
    then do
-      logWarning (hLogger h) $
-         "Tried to delete User with" .<~ userId <> " but it was already in " .<~ dataBase <> "."
-      return dataBase
+      logWarning (getLoggerHandle u) $
+         "Tried to delete User with" .<~ userId <> " but \"" <> mapName <> "\" doesn't contain this id."
+      return usersMap
    else do
-      logDebug (hLogger h) $ "Deleted " .<~ userId <> " from " .<~ dataBase <> "."
-      return $ deleteUserDB userId dataBase
+      logDebug (getLoggerHandle u) $ "Deleted " .<~ userId <> " from \"" <> mapName <> "\"."
+      deleteUserUM userId usersMap
 
--- | Tries to find @User@ with @UserId@ inside @DataBase@. Logs debug info of search result.
-lookupUser :: (Monad m, DB db)
-           => Handle m
-           -> UserId db           -- ^ Id of new user to add
-           -> DataBase db         -- ^ Telegram users Map to delete from
-           -> m (Maybe (User db)) -- ^ Just @User@ if @DataBase@ contains user with @UserId@. Nothing otherwise.
-lookupUser h userId dataBase =
-   case lookupDB userId dataBase of
-   Just user -> do
-      logDebug (hLogger h) $
-         "Finded User with" .<~ userId <> " in " .<~ dataBase <> "."
-      return $ Just user
-   _         -> do
-      logDebug (hLogger h) $
-         "Tried to find User with" .<~ userId <> " in " .<~ dataBase <> ", but found none."
-      return Nothing
+-- | Tries to find @User@ with @UserId@ inside @UsersMap@. Logs debug info of search result.
+lookupUser :: (BotUser user m t)
+           => user
+           -> UserId user           -- ^ Id of new user to add
+           -> UsersMap user         -- ^ Telegram users Map to delete from
+           -> m (Maybe (User user)) -- ^ Just @User@ if @UsersMap@ contains user with @UserId@. Nothing otherwise.
+lookupUser u userId usersMap = do
+   mapName <- getUsersMapName u
+   mUser <- lookupUM userId usersMap
+   case mUser of
+      Just user -> do
+         logDebug (getLoggerHandle u) $
+            "Finded User with" .<~ userId <> " in \"" <> mapName <> "\"."
+         return $ Just user
+      _         -> do
+         logDebug (getLoggerHandle u) $
+            "Tried to find User with" .<~ userId <> " in \"" <> mapName <> "\", but found none."
+         return Nothing
