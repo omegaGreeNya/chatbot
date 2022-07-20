@@ -1,8 +1,11 @@
+-- | Module contains class to work with different API by defined methods.
+-- See FrontEnd.Telegram for instance example
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FunctionalDependencies #-}
-module FrontEnd.Class where
+module FrontEnd.Class 
+   (Front(..)) where
 
 import Data.Kind (Type)
 
@@ -25,7 +28,7 @@ class ( BotUser user m idType
    getMessages     :: frontHandle -> m [(UserId user, ChatBot.Event (FrontMessage frontHandle))]
    -- ^ Gets list of new events from API.
    -- If you track offset, change it inside this funtion.
-   sendRespose     :: frontHandle -> (UserId user, ChatBot.Response (FrontMessage frontHandle)) -> m ()
+   sendResponse    :: frontHandle -> (UserId user, ChatBot.Response (FrontMessage frontHandle)) -> m ()
    -- ^ Sends bot answer to the user
    createBotHandle :: frontHandle -> UserId user -> m (Maybe (ChatBot.Handle m))
    -- ^ Creates bot handle with provided @UserId@

@@ -1,66 +1,124 @@
--- | Telegram bot application runner
+-- | Telegram frontend instance for Frint type class.
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE FlexibleInstances     #-}
+-- To-Do
+-- Move some logic away, parsing particullary.
+-- Make function parseUser based on hasField class.
+-- Remove duplicated fields.
+module FrontEnd.Telegram where
 
-module FrontEnd.Telegram
-   ( 
-   ) where
-{-
-import Control.Lens (preview)
-import Control.Monad (mapM, _mapM)
---import Data.List (filter)
-import Data.Aeson.Lens ( key, _String )
-import Data.ByteString.Char8 (ByteString)
-import Data.Either (isRight)
-import Network.HTTP.Simple (getResponseBody, httpBS)
+import Control.Applicative ((<|>))
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Aeson.Lens (key)
+import Data.Text (Text)
+import Data.Maybe (catMaybes)
+import Data.IORef (IORef)
+import Network.HTTP.Simple (httpLBS, getResponseBody)
 
-import Lib
-import qualified ChatBot
+import qualified Data.Aeson as A (eitherDecode, encode)
+import qualified Data.Text as T
 
-data Handle = Handle
-   { hConfig :: Config
-   , hToken :: String
-   , hLogger :: Logger.Handle
-   , hGetState  :: IO State
+import FrontEnd.Class (Front(..))
+import Lib ((.<~))
+import Logger (logDebug, logError)
+import Message (Message(..))
+import User.Class (BotUser(..))
+import User.Telegram (TelegramUser)
+
+import qualified API.Telegram as API
+import qualified ChatBot (Handle, Response(..), Event(..))
+import qualified Logger
+
+data TelegramFrontHandle m = TelegramFrontHandle
+   { hLogger       :: Logger.Handle m
+   , hAPIHandle    :: API.Handle m
+   , hUpdateOffset :: (Int -> Int) -> m ()
    }
 
-data Config = Config
-   { cfgOffset :: Int
-   , cfgTimeout :: Int
+data State = State
+   { currentOffset :: Int
    } deriving (Show)
 
-data State = State
-   { usersConfigs :: Map User.Id User.Config
+instance (MonadIO m) => 
+   Front (TelegramFrontHandle m) m (TelegramUser m) Int where
+      data FrontMessage (TelegramFrontHandle m) 
+         = MessageTg
+            { updateId         :: Int
+            , messageText      :: Text
+            , message_entities :: Maybe [API.MessageEntity]
+            }
+         | StickerTg
+            { updateId         :: Int
+            , sticker          :: API.Sticker
+            }
+         deriving (Show)
+      
+      getMessages h = do
+         request <- API.getUpdates (hAPIHandle h)
+         responseRaw <- liftIO $ httpLBS request
+         case A.eitherDecode $ getResponseBody responseRaw of
+            Right response@(API.GetUpdates isOk results) -> do
+               logDebug (hLogger h) $
+                  "Successfully parsed Telegram Update"
+               if isOk
+               then
+                  return . catMaybes $ map updateToMessage results
+               else do
+                  logError (hLogger h) $
+                     "Telegram API method \"getUpdates\" failed. Response: " .<~ (A.encode response)
+                  return []
+            Left msg -> do
+               logError (hLogger h) $
+                  "Parsing Telegram Update failed: " .<~ msg
+               return []
+      
+      sendResponse h (userId, (ChatBot.MenuResponse title buttons)) = 
+         undefined
+      
+      sendResponse h (userId, (ChatBot.MessageResponse messageTg)) =
+         undefined
+      
+      createBotHandle = undefined
 
-   -- get update  (getUpdates?offset)
-   -- generate response
-   -- post response (sendMessage&chat_id=,)
-run :: Handle -> IO ()
-run h = do
-   let loop = do
-         updates <- getUpdates h
-         let events = filter isRight . map parseUpdate updates
-         responses <- mapM . generateResponse h $ events
-         _mapM . postResponse h $ responses
-   _ <- loop
+instance MonadIO m => Message (FrontMessage (TelegramFrontHandle m)) where
+   messageToText msg@(MessageTg _ _ _) = Just $ messageText msg
+   messageToText msg@(StickerTg _ _  ) = Nothing
+   textToMessage text = MessageTg 1 text Nothing
+   modifyMessage      = id
 
-getUpdates :: Handle -> IO ByteString
-getUpdates h = do
-   result <- httpBS $ parseRequest "GET https://api.telegram.org/bot" <> (hToken h) <> "/getUpdates"
-   return $ getResponseBody result
 
-getMessage :: ?????????? -> Maybe Text
-getMessage = undefined
-
-toListOf (key "result" . _Array . each . key "message" . key "text") json
-
-parseUpdate :: Handle -> ByteString -> IO ParsedUpdate
-parseUpdate h json = do
-   let messages_texts = json ^.. key "result" . _Array . each . key "message" . key "text"
-   let chat_ids = json ^.. key "result" . _Array . each . key "message" . key "chat" . key "id"
-   
-
-generateResponse :: Handle -> 
-generateResponse
-
-postResponse :: Handle -> ChatBot.Response TelegramMessage
-postResponse = undefined
--}
+-- | Parses update to @ChatBot.Message@
+updateToMessage :: API.Update -> Maybe (UserId (TelegramUser m), ChatBot.Event (FrontMessage (TelegramFrontHandle m)))
+updateToMessage update = asSendedMessage <|> asSendedSticker <|> asPressedButton
+   where
+      updateId = API._update_id update
+      
+      asSendedMessage = do -- Parse Update as if it was sended message
+         message  <- (API._message :: API.Update -> Int) update
+         text     <- API._text message
+         user     <- API._from message
+         let userId   = API._id user
+             entities = API._entities message -- entities is optional field
+             event    = ChatBot.MessageEvent $ MessageTg updateId text entities
+         return (userId, event)
+      
+      asSendedSticker = do -- Parse Update as if it was sended sticker
+         message  <- API._message update
+         sticker  <- API._sticker message
+         user     <- API._from message
+         let userId = API._id user
+             event =  ChatBot.MessageEvent $ StickerTg updateId sticker
+         return (userId, event)
+      
+      asPressedButton = do -- You got the idea
+         callbackQuery   <- API._callback_query update
+         callbackMessage <- API._message callbackQuery
+         nText           <- API._text callbackMessage
+         n               <- readMaybe . T.unpack $ nText
+         let userId = API._id . API._from $ callbackQuery
+         -- IF YOU MADE PARSEUSER BASED ON HASFIELD, TEST IT WITH CALLBACK QUERY
+             event = SetRepetitionCountEvent n
+-- Make a decision between httpLBS and httpBS.
+         return (userId, event)

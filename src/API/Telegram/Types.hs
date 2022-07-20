@@ -31,7 +31,7 @@ data Message = Message
    , _chat         :: Chat                       -- ^ Chat message belongs to
    , _text         :: Maybe Text                 -- ^ Message text
    , _sticker      :: Maybe Sticker              -- ^ Message sticker
-   , _entities     :: [MessageEntity]            -- ^ Special entities for text messages, basically text markup.
+   , _entities     :: Maybe [MessageEntity]      -- ^ Special entities for text messages, basically text markup.
    , _reply_markup :: Maybe InlineKeyboardMarkup -- ^ Inline keyboard
    } deriving (Show)
 
@@ -52,8 +52,9 @@ data InlineKeyboardButton = InlineKeyboardButton
 -- | Update data field, represents incoming query from callback button in an inline_keyboad.
 --    https://core.telegram.org/bots/api/#callbackquery
 data CallbackQuery = CallbackQuery
-   { _id   :: Text -- ^ Unique query id 
-   , _from :: User -- ^ User, that sended callback query
+   { _id      :: Text          -- ^ Unique query id 
+   , _from    :: User          -- ^ User, that sended callback query
+   , _message :: Maybe Message -- ^ Message from callback button.
    } deriving (Show)
 
 -- | Telegram user data
@@ -141,6 +142,13 @@ deriveJSON telegramDerivingOptions ''MaskPosition
 
 -- Helpful type to construct methods with json Request Bodies.
 -- Same, they only cares about necessary data
+
+data GetUpdates = GetUpdates
+   { _ok     :: Bool
+   , _result :: [Update]
+   } deriving (Show)
+
+deriveJSON telegramDerivingOptions ''GetUpdates
 
 -- | sendMessage method data
 -- https://core.telegram.org/bots/api#sendmessage
