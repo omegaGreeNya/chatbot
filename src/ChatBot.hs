@@ -106,4 +106,4 @@ respondOnMessage h msg = do
    replicateM repetitionCount . return $ echo msg
 
 echo :: Message a => a -> Response a
-echo = MessageResponse
+echo = MessageResponse . modifyMessage
