@@ -12,13 +12,15 @@ import User.Class as X
    (BotUser
       ( UserId, User, UsersMap        -- Associated Data Types
       , newUserId, defaultUser        -- UserId and User smart-constructors
-      , getBotState, modifyBotStateUM -- ChatBot.State methods for UsersMap
+      , getBotState, modifyBotState   -- ChatBot.State methods for UsersMap
       )
    )
 
 import User.Class (BotUser(..))
 import Lib ((.<~))
 import Logger (logDebug, logWarning)
+import qualified ChatBot (State)
+
 
 -- | Adds @User@ into @UsersMap@. If user already there, logs error and returns same map.
 addUser :: (BotUser user m t)

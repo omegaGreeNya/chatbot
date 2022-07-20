@@ -2,6 +2,8 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+-- to-do
+-- Rename TelegramUser to TelegramUserHandle
 module User.Telegram where
 {-   ( TelegramDB
    , UserState(..)
@@ -52,11 +54,7 @@ instance MonadIO m => BotUser (TelegramUser m) m Int where
       return $ UserTg stateRef
    
    getBotState = liftIO . readIORef . getUserState
-   modifyBotStateUM f userId m = do
-      mUser <- lookupUM userId m
-      case mUser of
-         Just user -> liftIO $ modifyIORef' (getUserState user) f 
-         _         -> return ()
+   modifyBotState user f = liftIO $ modifyIORef' (getUserState user) f 
    
    fromListUM = return . DataBaseTg . Map.fromList
    insertWithUM f uId user m = return . DataBaseTg $ Map.insertWith f uId user (getDataBase m)

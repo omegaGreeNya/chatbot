@@ -9,6 +9,8 @@
 -- See FrontEnd for example of using @BotUser@ class functional.
 -- To-Do 
 -- Add default methods, if it's reasonable.
+-- Rename user to userHandle
+-- Rename t to idType
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
@@ -24,11 +26,11 @@ import qualified ChatBot (State)
 import qualified Logger
 
 -- | This class unifies working with different user types, from different front-ends.
--- Type variable t is id type (for example, one API may have Strings ids, another Int ids)
 -- @UserId@ is the key, and @User@ is Value.
--- If you want to store mutable Values, make such @User@ that contains reference for mutable variable.
--- And same as @User@, @UsersMap@ also can contain referece for mutable map.
 -- "user" is somehow mimics handle-pattern, and it acts as phantom type for associated data.
+-- Type variable t is id type (for example, one API may have Strings ids, another Int ids)
+-- @User@ have to contain refernece to mutable @ChatBot.State@, due specific of ChatBot implemetation.
+-- If you need @UsersMap@ also can contain referece for mutable map.
 -- Defining instance of this class provides access to working with functions from User module.
 class ( Show (UserId user)
       , Ord  (UserId user)
@@ -47,15 +49,13 @@ class ( Show (UserId user)
    -- ^ Loging done automatic by functions from @User@ module (data base related functions).
    -- But, if you reaally need, you can add loging into methods below.
    newUserId        :: t -> m (UserId user)
-   -- ^ Smart-Constructor for @UserId@ type. t represents type of id that API uses.
+   -- ^ Smart-Constructor for @UserId@ type. t represents type of id that used by API ((Int, Int)/Int/Text..).
    defaultUser      :: ChatBot.State -> m (User user)
-   -- ^ Creating new user with provided bot state for him
+   -- ^ Creats new user with provided bot state for him.
    getBotState      :: User user -> m (ChatBot.State)
    -- ^ Bot settings acessor for @User@ type
-   modifyBotStateUM   :: (ChatBot.State -> ChatBot.State) -> (UserId user) -> (UsersMap user) -> m ()
-   -- ^ Function for updating @ChatBot.State@ for user with @UserID@. 
-   -- YOU DON'T NEED TO CARE DOES @UsersMap@ CONTAINS @UserId@ OR NOT, JUST "return ()" IF USERID WASN'T FOUND.
-   -- This is inner function, and functions from User module will wrap modifyBotStateUM in a proper way.
+   modifyBotState   :: User user -> (ChatBot.State -> ChatBot.State) -> m ()
+   -- ^ Updates bot settings of @User@ with provided function.
    fromListUM       :: [(UserId user, User user)] -> m (UsersMap user)
    -- ^ Creats Data Base from pairs of id and vals. Should return empty UsersMap on empty List.
    insertWithUM     :: (User user -> User user -> User user) -> UserId user -> User user -> UsersMap user -> m (UsersMap user)
