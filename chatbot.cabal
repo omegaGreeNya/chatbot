@@ -32,6 +32,7 @@ library
       ChatBot.Init
       Config
       FrontEnd
+      FrontEnd.Class
       FrontEnd.Console
       FrontEnd.Telegram
       Lib
