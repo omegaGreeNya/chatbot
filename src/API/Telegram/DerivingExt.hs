@@ -1,7 +1,7 @@
 -- | This module needed for precompiling template haskell parametrs (telegramDerivingOptions)
 -- Due TH specific, we can't define options in same module there template is used.
 module API.Telegram.DerivingExt
-   (telegramDerivingOptions)
+   (telegramDerivingDrop)
    where
 
 import Data.Aeson.TH (Options (..), defaultOptions)
@@ -10,6 +10,7 @@ import Data.Aeson.TH (Options (..), defaultOptions)
 -- specific, deriving represented in FrontEnd.Telegram.API.Types module
 telegramDerivingOptions :: Options
 telegramDerivingOptions = defaultOptions
-   { fieldLabelModifier = drop 1
-   , omitNothingFields = True
-   }
+   {omitNothingFields = True}
+
+telegramDerivingDrop :: Int -> Options
+telegramDerivingDrop n = telegramDerivingOptions {fieldLabelModifier = drop n}
