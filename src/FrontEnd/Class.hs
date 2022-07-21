@@ -7,6 +7,9 @@
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FunctionalDependencies #-}
+-- to-do
+-- REWORK FRONT CLASS TO SUPPORT UPDATING OFFSET WITHOUT DEVIL TRICKS
+-- Maybe on message function will do the job, or smthng like that
 module FrontEnd.Class 
    (Front(..)) where
 
