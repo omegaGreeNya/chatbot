@@ -6,13 +6,9 @@ module API.Telegram.ParseMessage where
 import Control.Applicative ((<|>))
 import Data.Text (Text)
 
-import FrontEnd.Class (FrontMessage)
 import Lib ((.<~))
 import Message (Message(..))
 import qualified API.Telegram.Types as API
-
--- | 
-type instance FrontMessage = MessageTg
 
 data MessageTg
    = TextMessageTg

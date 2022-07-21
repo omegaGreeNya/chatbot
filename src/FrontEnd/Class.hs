@@ -8,20 +8,11 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FunctionalDependencies #-}
 module FrontEnd.Class 
-   ( FrontMessage
-   , Front(..)
-   ) where
-
-import Data.Kind (Type)
+   (Front(..)) where
 
 import Message (Message(..))
 import User.Class (BotUser(..))
 import qualified ChatBot (Handle, Response, Event)
-
--- | Related to Front class type family.
--- Represents Message format of particular Frontend.
--- For example of instance see API.Telegram.Parse
-type family FrontMessage :: Type
 
 -- | Glue class to connect user representation, frontend methods calls,
 -- Message data and bot logic.
@@ -30,13 +21,13 @@ type family FrontMessage :: Type
 -- for methods of this class, unless you want to debug.
 class ( BotUser user m userIdType
       , Monad m
-      , Message FrontMessage)
-   => Front frontHandle m user userIdType 
-      | user -> userIdType where
-   getMessages     :: frontHandle -> m [(UserId user, ChatBot.Event FrontMessage)]
+      , Message frontMessage)
+   => Front frontHandle frontMessage user userIdType m
+      | frontHandle -> frontMessage, user -> userIdType where
+   getMessages     :: frontHandle -> m [(UserId user, ChatBot.Event frontMessage)]
    -- ^ Gets list of new events from API.
    -- If you track offset, change it inside this funtion.
-   sendResponse    :: frontHandle -> (UserId user, ChatBot.Response FrontMessage) -> m ()
+   sendResponse    :: frontHandle -> (UserId user, ChatBot.Response frontMessage) -> m ()
    -- ^ Sends bot answer to the user
    createBotHandle :: frontHandle -> UserId user -> m (Maybe (ChatBot.Handle m))
    -- ^ Creates bot handle with provided @UserId@
