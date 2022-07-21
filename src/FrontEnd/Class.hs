@@ -19,7 +19,7 @@ import qualified ChatBot (Handle, Response, Event)
 -- All data you need to work with API should be stored inside frontHandle.
 -- Consider this class as inner. So you don't need to provide logging functional
 -- for methods of this class, unless you want to debug.
-class ( BotUser user m userIdType
+class ( BotUser user userIdType m
       , Monad m
       , Message frontMessage)
    => Front frontHandle frontMessage user userIdType m

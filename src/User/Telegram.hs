@@ -37,7 +37,7 @@ data UserState = UserState
    { repCount :: Int
    } deriving (Show)
 
-instance MonadIO m => BotUser (TelegramUser m) m Int where
+instance MonadIO m => BotUser (TelegramUser m) Int m where
    data UserId (TelegramUser m) = UserIdTg Int
       deriving (Show, Eq, Ord)
    data User (TelegramUser m) = UserTg

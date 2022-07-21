@@ -35,7 +35,7 @@ import qualified Logger
 class ( Show (UserId user)
       , Ord  (UserId user)
       , Monad m)
-   => BotUser user m t | user -> t where
+   => BotUser user t m | user -> t where
    data UserId user :: Type
    -- ^ Key for UsersMap. Show, Eq, Ord must be defined for @UserId@.
    data User user     :: Type

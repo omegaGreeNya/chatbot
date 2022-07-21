@@ -22,7 +22,7 @@ import Logger (logDebug, logWarning)
 
 
 -- | Adds @User@ into @UsersMap@. If user already there, logs error and returns same map.
-addUser :: (BotUser user m t)
+addUser :: (BotUser user t m)
         => user
         -> UserId user       -- ^ Id of new user to add
         -> User user         -- ^ New user to add
@@ -41,7 +41,7 @@ addUser u userId user usersMap = do
       insertWithUM (const id) userId user usersMap
 
 -- | Delets @User@ from @UsersMap@. If @UsersMap@ doesn't contain provided @UserId@ logs warning.
-deleteUser :: (BotUser user m t)
+deleteUser :: (BotUser user t m)
            => user
            -> UserId user       -- ^ Id of new user to add
            -> UsersMap user     -- ^ Telegram users Map to delete from
@@ -59,7 +59,7 @@ deleteUser u userId usersMap = do
       deleteUserUM userId usersMap
 
 -- | Tries to find @User@ with @UserId@ inside @UsersMap@. Logs debug info of search result.
-lookupUser :: (BotUser user m t)
+lookupUser :: (BotUser user t m)
            => user
            -> UserId user           -- ^ Id of new user to add
            -> UsersMap user         -- ^ Telegram users Map to delete from
