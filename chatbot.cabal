@@ -27,6 +27,7 @@ library
       API.Telegram
       API.Telegram.DerivingExt
       API.Telegram.Methods
+      API.Telegram.ParseMessage
       API.Telegram.Types
       ChatBot
       ChatBot.Init

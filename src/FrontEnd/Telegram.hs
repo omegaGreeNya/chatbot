@@ -1,5 +1,4 @@
 -- | Telegram frontend instance for Frint type class.
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -8,7 +7,7 @@
 -- Make function parseUser based on hasField class.
 -- Remove duplicated fields.
 module FrontEnd.Telegram where
-
+{-
 import Control.Applicative ((<|>))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Aeson.Lens (key)
@@ -99,7 +98,7 @@ updateToMessage update = asSendedMessage <|> asSendedSticker <|> asPressedButton
          message  <- (API._message :: API.Update -> Int) update
          text     <- API._text message
          user     <- API._from message
-         let userId   = API._id user
+         let userId   = newUserId $ API._id user
              entities = API._entities message -- entities is optional field
              event    = ChatBot.MessageEvent $ MessageTg updateId text entities
          return (userId, event)
@@ -108,7 +107,7 @@ updateToMessage update = asSendedMessage <|> asSendedSticker <|> asPressedButton
          message  <- API._message update
          sticker  <- API._sticker message
          user     <- API._from message
-         let userId = API._id user
+         let userId = newUserId $ API._id user
              event =  ChatBot.MessageEvent $ StickerTg updateId sticker
          return (userId, event)
       
@@ -117,8 +116,9 @@ updateToMessage update = asSendedMessage <|> asSendedSticker <|> asPressedButton
          callbackMessage <- API._message callbackQuery
          nText           <- API._text callbackMessage
          n               <- readMaybe . T.unpack $ nText
-         let userId = API._id . API._from $ callbackQuery
+         let userId = newUserId . API._id . API._from $ callbackQuery
          -- IF YOU MADE PARSEUSER BASED ON HASFIELD, TEST IT WITH CALLBACK QUERY
              event = SetRepetitionCountEvent n
 -- Make a decision between httpLBS and httpBS.
          return (userId, event)
+-}
