@@ -17,7 +17,7 @@ import API.Telegram.DerivingExt (telegramDerivingDrop)
 -- | Incoming update. AT MOST ONE of the optional parameters can be present in single update.
 --    https://core.telegram.org/bots/api/#update
 data Update = Update
-   { upd_id      :: Int                 -- ^ Unique update identifier
+   { upd_id             :: Int                 -- ^ Unique update identifier
    , upd_message        :: Maybe Message       -- ^ Text message update
    , upd_callback_query :: Maybe CallbackQuery -- ^ Button press update 
    } deriving (Show) 
@@ -25,7 +25,7 @@ data Update = Update
 -- | Telegram message.
 --    https://core.telegram.org/bots/api/#message
 data Message = Message
-   { msg_id   :: Int                        -- ^ Unique message identifier
+   { msg_id           :: Int                        -- ^ Unique message identifier
    , msg_from         :: Maybe User                 -- ^ User who sent the message
    , msg_chat         :: Chat                       -- ^ Chat message belongs to
    , msg_text         :: Maybe Text                 -- ^ Message text
