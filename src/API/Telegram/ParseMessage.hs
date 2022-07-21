@@ -1,7 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 -- to-do
 -- Add stickers
-module API.Telegram.ParseMessage where
+module API.Telegram.ParseMessage 
+   ( MessageTg (..)
+   , updateToMessage
+   ) where
 
 import Control.Applicative ((<|>))
 import Data.Text (Text)
