@@ -157,8 +157,12 @@ deriveJSON (telegramDerivingDrop 4) ''GetUpdates
 data SendMessage = SendMessage
    { sendMsg_chat_id      :: Int
    , sendMsg_text         :: Text
+   , sendMsg_entities     :: Maybe [MessageEntity]
    , sendMsg_reply_markup :: Maybe InlineKeyboardMarkup
    } deriving (Show)
+
+defaultSendMessage :: Int -> Text -> SendMessage
+defaultSendMessage chatId text = SendMessage chatId text Nothing Nothing
 
 deriveJSON (telegramDerivingDrop 8) ''SendMessage
 

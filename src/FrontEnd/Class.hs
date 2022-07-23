@@ -8,8 +8,6 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FunctionalDependencies #-}
 -- to-do
--- REWORK FRONT CLASS TO SUPPORT UPDATING OFFSET WITHOUT DEVIL TRICKS
--- Maybe on message function will do the job, or smthng like that
 module FrontEnd.Class 
    (Front(..)) where
 
@@ -22,8 +20,8 @@ class ( Message frontMessage
       , Monad m)
    => Front frontHandle frontMessage userIdType m
       | frontHandle -> frontMessage, frontHandle -> userIdType where
-   getMessages     :: frontHandle -> m [(userIdType, ChatBot.Event frontMessage)]
+   getMessages  :: frontHandle -> m [(userIdType, ChatBot.Event frontMessage)]
    -- ^ Gets list of new events.
    -- If you track offset, change it inside this funtion.
-   sendResponse    :: frontHandle -> (userIdType, ChatBot.Response frontMessage) -> m ()
+   sendResponse :: frontHandle -> userIdType -> (ChatBot.Response frontMessage) -> m ()
    -- ^ Sends bot answer to the user
