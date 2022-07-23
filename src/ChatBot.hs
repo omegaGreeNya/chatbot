@@ -55,7 +55,7 @@ data Event a = SetRepetitionCountEvent RepetitionCount
              deriving Show
 
 data Response a = MessageResponse a
-                | MenuResponse Title [(RepetitionCount, Event a)]
+                | MenuResponse Title [RepetitionCount]
                 deriving Show
 
 type Title = Text
@@ -92,9 +92,9 @@ respondRepeatCommnad h = do
    Logger.logInfo (hLoggerHandle h) "Got /repeat command"
    repetitionCount        <- fmap stateRepetitionCount . hGetState $ h
    let question            = cfgRepeatText . hConfig $ h
-   let title               = "Current repetition count: " .< repetitionCount <> "\n" <> question
-   let maxRepetitionCount = cfgMaxRepetitionsCount . hConfig $ h
-   let buttons             = [(n, SetRepetitionCountEvent n) | n <- [1..maxRepetitionCount]]
+       title               = "Current repetition count: " .< repetitionCount <> "\n" <> question
+       maxRepetitionCount = cfgMaxRepetitionsCount . hConfig $ h
+       buttons             = [1..maxRepetitionCount]
    return . singleton $ MenuResponse title buttons
 
 respondOnMessage :: (Monad m, Message a) => Handle m -> a -> m [Response a]

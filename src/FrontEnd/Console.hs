@@ -3,8 +3,8 @@
 -- To-Do
 -- (???) We assume that each button is unique. Rework it maybe?
 -- Vocabulary?
-module FrontEnd.Console
-   ( Handle (..)
+module FrontEnd.Console where
+{-  ( Handle (..)
    , run
    ) where
 
@@ -73,19 +73,19 @@ evalResponse h ((ChatBot.MenuResponse title buttons):responses) = do
       Nothing ->
          evalResponse h responses
 
-putButtons :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO ()
+putButtons :: [ChatBot.RepetitionCount] -> IO ()
 putButtons buttons = putButtonsBy3 buttons 0
 
-putButtonsBy3 :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> Int -> IO ()
+putButtonsBy3 :: [ChatBot.RepetitionCount] -> Int -> IO ()
 putButtonsBy3 [] _ = TIO.putStrLn ""
-putButtonsBy3 ((x,_):xs) i = do
+putButtonsBy3 (x:xs) i = do
    TIO.putStr $ "[" .< x <> "] "
    case i of
       2 -> TIO.putStrLn "" >> putButtonsBy3 xs 0
       _ -> putButtonsBy3 xs (i + 1)
 
 -- (???) We assume that each button is unique.
-getButton :: [(ChatBot.RepetitionCount, ChatBot.Event Text)] -> IO (Maybe (ChatBot.Event Text))
+getButton :: [ChatBot.RepetitionCount] -> IO (Maybe (ChatBot.Event Text))
 getButton buttons = do
    input <- getLine
    case readMaybe input of
@@ -105,3 +105,4 @@ findButtonEvent buttons n = do
          TIO.putStrLn "You pressed not listed number! Fool!"
          return Nothing
       Just (_, event) -> return $ Just event
+-}

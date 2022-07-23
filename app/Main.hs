@@ -2,7 +2,9 @@
 --    Rework imports
 --    Work on start up logic
 module Main where
-
+main :: IO ()
+main = undefined
+{-
 import System.IO (withFile, IOMode(..))
 
 import Config (AppConfig, defaultLoggerConfig, initAppConfig)
@@ -27,3 +29,4 @@ initAppConfiguration = do
    withFile "logStart.txt" AppendMode $ \startUpLogFileHandle -> do
       let startUpLoggerHandle = Logger.createHandleIO startUpLogFileHandle defaultLoggerConfig
       Logger.withHandle startUpLoggerHandle initAppConfig
+-}
