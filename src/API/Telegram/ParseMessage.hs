@@ -11,6 +11,8 @@ import Data.Text (Text)
 
 import Lib ((.<~))
 import Message (Message(..))
+import API.Telegram.Types (UpdateIdType, UserIdType)
+
 import qualified API.Telegram.Types as API
 
 data MessageTg
@@ -36,12 +38,9 @@ instance Message MessageTg where
    textToMessage text = TextMessageTg text Nothing
    modifyMessage      = id
 
-type UserId = Int
-type UpdateId = Int
-
 -- | Parses update to fully packed message.
 -- Sender, offset, message itself.
-updateToMessage :: API.Update -> Maybe (UpdateId, UserId, MessageTg)
+updateToMessage :: API.Update -> Maybe (UpdateIdType, UserIdType, MessageTg)
 updateToMessage upd = case parseResult of
    Just (userId, msg) -> Just (updateId, userId, msg)
    _                  -> Nothing 
@@ -53,7 +52,7 @@ updateToMessage upd = case parseResult of
          <|> asPressedButton upd
 
 -- | Parse Update as if it was sended message
-asSendedMessage :: API.Update -> Maybe (UserId, MessageTg)
+asSendedMessage :: API.Update -> Maybe (UserIdType, MessageTg)
 asSendedMessage update = do
    message  <- API.upd_message update
    msg      <- API.msg_text message
@@ -64,7 +63,7 @@ asSendedMessage update = do
 
 {-
 -- | Parse Update as if it was sended sticker
-asSendedSticker :: API.Update -> Maybe (UserId, MessageTg)
+asSendedSticker :: API.Update -> Maybe (UserIdType, MessageTg)
 asSendedSticker = do 
    message  <- API.upd_message update
    msg      <- API.msg_sticker
@@ -74,7 +73,7 @@ asSendedSticker = do
 -}
 
 -- | Parse Update as if it was pressed button event
-asPressedButton :: API.Update -> Maybe (UserId, MessageTg)
+asPressedButton :: API.Update -> Maybe (UserIdType, MessageTg)
 asPressedButton update = do
    callbackQuery   <- API.upd_callback_query update
    callbackMessage <- API.callQ_message callbackQuery

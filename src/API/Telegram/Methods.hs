@@ -31,12 +31,14 @@ import qualified API.Telegram.Types as T
 
 -- | Telegram API calls handle
 data Handle m = Handle
-   { hConfig    :: Config -- ^ Configurable data for making calls, url, token, etc.
-   , hGetOffset :: m Int  -- ^ This action provides message offset. 
-                          --      Offset used to inform telegram server from witch id updates we intrested in.
-                          --      Be careful thogth, telegram will never return update once it's id was less than offset.
-                          --      Offset should be changed only by caller logic.
-                          --      More info here: https://core.telegram.org/bots/api#getupdates
+   { hConfig    :: Config
+   -- ^ Configurable data for making calls, url, token, etc.
+   , hGetOffset :: m T.UpdateIdType  
+   -- ^ This action provides message offset. 
+   -- Offset used to inform telegram server from witch id updates we intrested in.
+   -- Be careful thogth, telegram will never return update once it's id was less than offset.
+   -- Offset should be changed only by caller logic.
+   -- More info here: https://core.telegram.org/bots/api#getupdates
    }
 
 data Config = Config

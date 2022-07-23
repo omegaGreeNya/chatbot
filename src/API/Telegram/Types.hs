@@ -14,10 +14,13 @@ import Data.Text (Text)
 
 import API.Telegram.DerivingExt (telegramDerivingDrop)
 
+type UpdateIdType = Int
+type UserIdType = Int
+
 -- | Incoming update. AT MOST ONE of the optional parameters can be present in single update.
 --    https://core.telegram.org/bots/api/#update
 data Update = Update
-   { upd_id             :: Int                 -- ^ Unique update identifier
+   { upd_id             :: UpdateIdType        -- ^ Unique update identifier
    , upd_message        :: Maybe Message       -- ^ Text message update
    , upd_callback_query :: Maybe CallbackQuery -- ^ Button press update 
    } deriving (Show) 
@@ -59,7 +62,7 @@ data CallbackQuery = CallbackQuery
 -- | Telegram user data
 --    https://core.telegram.org/bots/api/#user
 data User = User
-   { user_id :: Int -- ^ Unique user id
+   { user_id :: UserIdType -- ^ Unique user id
    } deriving (Show)
 
 -- | Telegram chat data

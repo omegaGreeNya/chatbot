@@ -28,14 +28,14 @@ import qualified Logger
 -- | This class unifies working with different user types, from different front-ends.
 -- @UserId@ is the key, and @User@ is Value.
 -- "user" is somehow mimics handle-pattern, and it acts as phantom type for associated data.
--- Type variable t is id type (for example, one API may have Strings ids, another Int ids)
+-- Type variable userIdType is id type (for example, one API may have Strings ids, another Int ids)
 -- @User@ have to contain refernece to mutable @ChatBot.State@, due specific of ChatBot implemetation.
 -- If you need @UsersMap@ also can contain referece for mutable map.
 -- Defining instance of this class provides access to working with functions from User module.
 class ( Show (UserId user)
       , Ord  (UserId user)
       , Monad m)
-   => BotUser user t m | user -> t where
+   => BotUser user userIdType m | user -> userIdType where
    data UserId user :: Type
    -- ^ Key for UsersMap. Show, Eq, Ord must be defined for @UserId@.
    data User user     :: Type
@@ -48,7 +48,7 @@ class ( Show (UserId user)
    getLoggerHandle  :: user -> Logger.Handle m
    -- ^ Loging done automatic by functions from @User@ module (data base related functions).
    -- But, if you reaally need, you can add loging into methods below.
-   newUserId        :: t -> m (UserId user)
+   newUserId        :: userIdType -> m (UserId user)
    -- ^ Smart-Constructor for @UserId@ type. t represents type of id that used by API ((Int, Int)/Int/Text..).
    defaultUser      :: ChatBot.State -> m (User user)
    -- ^ Creats new user with provided bot state for him.
