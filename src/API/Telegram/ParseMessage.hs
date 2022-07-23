@@ -38,11 +38,10 @@ instance Message MessageTg where
 
 type UserId = Int
 type UpdateId = Int
-type PackedMessage = (UserId, UpdateId, MessageTg)
 
 -- | Parses update to fully packed message.
 -- Sender, offset, message itself.
-updateToMessage :: API.Update -> Maybe PackedMessage
+updateToMessage :: API.Update -> Maybe (UpdateId, UserId, MessageTg)
 updateToMessage upd = case parseResult of
    Just (userId, msg) -> Just (updateId, userId, msg)
    _                  -> Nothing 
