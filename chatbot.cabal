@@ -29,10 +29,10 @@ library
       API.Telegram.Methods
       API.Telegram.ParseMessage
       API.Telegram.Types
+      App
       ChatBot
       ChatBot.Init
       Config
-      FrontEnd
       FrontEnd.Class
       FrontEnd.Console
       FrontEnd.Telegram

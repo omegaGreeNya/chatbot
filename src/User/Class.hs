@@ -49,9 +49,9 @@ class ( Show (UserId user)
    -- ^ Loging done automatic by functions from @User@ module (data base related functions).
    -- But, if you reaally need, you can add loging into methods below.
    newUserId        :: userIdType -> m (UserId user)
-   -- ^ Smart-Constructor for @UserId@ type. t represents type of id that used by API ((Int, Int)/Int/Text..).
-   defaultUser      :: ChatBot.State -> m (User user)
-   -- ^ Creats new user with provided bot state for him.
+   -- ^ Smart-Constructor for @UserId@ type. userIdType represents type of id that used by API ((Int, Int)/Int/Text..).
+   newUser          :: user -> m (User user)
+   -- ^ Creats new user.
    getBotState      :: User user -> m (ChatBot.State)
    -- ^ Bot settings acessor for @User@ type
    modifyBotState   :: User user -> (ChatBot.State -> ChatBot.State) -> m ()

@@ -29,12 +29,13 @@ import qualified ChatBot (State)
 import qualified Logger
 
 data TelegramUser m = TelegramUser
-   { mapName :: Text
+   { mapName  :: Text
    , dbLogger :: Logger.Handle m
+   , config   :: Config
    }
 
-data UserState = UserState
-   { repCount :: Int
+data Config = Config
+   { defaultBotState :: ChatBot.State
    } deriving (Show)
 
 instance MonadIO m => BotUser (TelegramUser m) Int m where
@@ -49,7 +50,8 @@ instance MonadIO m => BotUser (TelegramUser m) Int m where
    getLoggerHandle = dbLogger
    
    newUserId = return . UserIdTg
-   defaultUser state = do
+   newUser userH = do
+      let state = defaultBotState . config $ userH
       stateRef <- liftIO $ newIORef state
       return $ UserTg stateRef
    

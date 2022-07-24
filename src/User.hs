@@ -11,7 +11,7 @@ module User
 import User.Class as X
    (BotUser
       ( UserId, User, UsersMap        -- Associated Data Types
-      , newUserId, defaultUser        -- UserId and User smart-constructors
+      , newUserId, newUser            -- UserId and User smart-constructors
       , getBotState, modifyBotState   -- ChatBot.State methods for UsersMap
       )
    )
